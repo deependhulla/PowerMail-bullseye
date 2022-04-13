@@ -1,0 +1,29 @@
+uid = root
+gid = root
+read only = false
+#use chroot = yes
+#motd file = /etc/rsyncd.motd
+log file = /var/log/rsyncd.log
+transfer logging = no
+log format = %h %o %f %l %b
+pid file = /var/run/rsyncd.pid
+lock file = /var/run/rsync.lock
+##hosts allow=172.16.201.0/24 192.168.1.0/24 
+hosts allow=127.0.0.2/32
+hosts deny=*
+
+[extrabackup]
+        path = /data/extrabackup
+        comment =Backup of Data
+        list = yes
+        auth users = rbackup
+        secrets file = /etc/rsyncd-access.scrt
+
+# chmod 600 /etc/rsyncd.conf  
+# chmod 600 /etc/rsyncd-access.scrt
+# in /etc/rsyncd-access.scrt have line as : rbackup:mypass2020
+#
+# sample script
+# /usr/bin/rsync -av /home/data rbackup@172.16.201.15::extrabackup 
+#
+
