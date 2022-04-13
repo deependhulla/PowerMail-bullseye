@@ -1,0 +1,8 @@
+#!/bin/sh
+
+##specially on proxmox on lxc having bind.
+## ref Link : https://forum.proxmox.com/threads/apparmor-denies-named-startup.23962/
+
+ln -s /etc/apparmor.d/usr.sbin.named /etc/apparmor.d/disable/
+apparmor_parser -R /etc/apparmor.d/usr.sbin.named
+
