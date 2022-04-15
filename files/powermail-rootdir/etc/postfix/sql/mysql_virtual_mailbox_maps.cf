@@ -1,0 +1,8 @@
+# mysql_virtual_mailbox_maps.cf
+user = powermail
+password = ohm8ahC2
+hosts = localhost
+dbname = powermail
+query = SELECT maildir FROM mailbox WHERE username='%s' AND active = '1'
+#expansion_limit = 100
+

@@ -1,0 +1,6 @@
+/^subject:/      WARN
+/^to:/           WARN
+/^from:/         WARN
+/^Subject:/      WARN
+/^To:/           WARN
+/^From:/         WARN

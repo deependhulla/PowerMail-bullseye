@@ -1,0 +1,12 @@
+connect = host=localhost dbname=powermail user=powermail password=ohm8ahC2
+
+map {
+    pattern = shared/last-login/$user
+    table = powermailbox
+    value_field = lastlogintime
+
+    fields {
+        username = $user
+    }
+}
+

@@ -1,0 +1,106 @@
+#!/usr/bin/perl
+# check for domain
+# check for account is mailbox or alias
+# then give info
+
+
+$newin=$ARGV[0];
+$newin=~ s/\n/""/eg;
+$newin=~ s/\t/""/eg;
+$newin=~ s/\r/""/eg;
+$newin=~ s/ /""/eg;
+$newin=~ s/;/""/eg;
+$newin=~ s/\*/""/eg;
+$newin=~ s/%/""/eg;
+$newin=~ s/,/""/eg;
+$newin=~ s/'/""/eg;
+$newin=~ s/\"/""/eg;
+#print "\n--> $newin\n";
+
+$newinx=$ARGV[1];
+$newinx=~ s/\n/""/eg;
+$newinx=~ s/\t/""/eg;
+$newinx=~ s/\r/""/eg;
+$newinx=~ s/ /""/eg;
+$newinx=~ s/;/""/eg;
+#$newinx=~ s/\*/""/eg;
+#$newinx=~ s/%/""/eg;
+$newinx=~ s/,/""/eg;
+$newinx=~ s/'/""/eg;
+$newinx=~ s/\"/""/eg;
+#print "\n--> $newinx\n";
+
+
+use DBI;
+
+open(OUTOAZ,"</home/powermail/etc/powermail.mysql");
+while(<OUTOAZ>)
+{
+$aj=$_;
+$aj=~ s/\n/""/eg;
+$aj=~ s/\r/""/eg;
+($mysqlhost,$mysqlport,$mysqlusername,$mysqlpass,$mysqldb)=split/\|/,$aj;
+#print "--> $mysqlhost,$mysqlport,$mysqlusername,$mysqlpass,$mysqldb";
+}
+close(OUTOAZ);
+my $dbh = DBI->connect("dbi:mysql:server=".$mysqlhost.";database=".$mysqldb.";host=".$mysqlhost."",$mysqlusername,$mysqlpass);
+die "\n Unable for connect to powermail MySQL server $DBI::errstr \n" unless $dbh;
+$gonow=1;
+
+if($newin eq "")
+{
+$gonow=0;
+print "Please provide emailaddress . example : vpasswd deepen\@deependhulla.com  ABC\@Rocket#4040";
+}
+($userx,$domaingot)=split/\@/,$newin;
+
+if($gonow==1)
+{
+$sqlin="SELECT `domain` FROM `domain` WHERE `domain` = '".$domaingot."' ";
+$table_data = $dbh->prepare($sqlin);
+$table_data->execute;
+$domanok=0;
+while(($gdomainname)=$table_data->fetchrow_array)
+{
+$domainok=1;
+}
+
+if($domainok==0){$gonow=0; print "\nDomain ".$domaingot." not on this server.\n";}
+}
+
+if($gonow==1)
+{
+$sqlx="SELECT `username`, `password`, `name`, `maildir`, `quota`, `domain`, `created`, `modified`, `active` FROM `mailbox` WHERE `username` = '".$newin."' ";
+
+#print "\n $sqlx \n";
+$table_data = $dbh->prepare($sqlx);
+$table_data->execute;
+$userok=0;
+while(($guser,$gpass,$gname,$gmaildir,$gquota,$gdom,$gcreate,$gmod,$gact)=$table_data->fetchrow_array)
+{
+$userok=1;
+}
+
+
+if($userok==0){$gonow=0; print "\nMailbox  ".$newin." not on this server.\n";}
+if($userok==1){$gonow=1; 
+$newpass=`pwgen -c -1 8`;
+$newpass=~ s/\n/""/eg;
+$newpass=~ s/\t/""/eg;
+$newpass=~ s/\r/""/eg;
+$newpass=~ s/ /""/eg;
+if($newinx ne ""){$newpass=$newinx;}
+
+$sqlx = "UPDATE `mailbox` SET `password` = '".$newpass."', `modified` = NOW() WHERE `mailbox`.`username` = '".$newin."';";
+#print "$sqlx\n";
+$table_data = $dbh->prepare($sqlx);
+$table_data->execute;
+
+print "\n Password changed for ".$newin." as ".$newpass."";
+}
+
+
+}
+
+
+print "\n";

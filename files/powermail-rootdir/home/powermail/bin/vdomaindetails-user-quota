@@ -1,0 +1,117 @@
+#!/usr/bin/perl
+# check for domain
+# check for account is mailbox or alias
+# then give info
+
+
+$newin=$ARGV[0];
+$newin=~ s/\n/""/eg;
+$newin=~ s/\t/""/eg;
+$newin=~ s/\r/""/eg;
+$newin=~ s/ /""/eg;
+$newin=~ s/;/""/eg;
+$newin=~ s/\*/""/eg;
+$newin=~ s/%/""/eg;
+$newin=~ s/,/""/eg;
+$newin=~ s/'/""/eg;
+$newin=~ s/\"/""/eg;
+#print "\n--> $newin\n";
+
+$mnewin=$ARGV[1];
+$mnewin=~ s/\n/""/eg;
+$mnewin=~ s/\t/""/eg;
+$mnewin=~ s/\r/""/eg;
+$mnewin=~ s/ /""/eg;
+$mnewin=~ s/;/""/eg;
+$mnewin=~ s/\*/""/eg;
+$mnewin=~ s/%/""/eg;
+$mnewin=~ s/,/""/eg;
+$mnewin=~ s/'/""/eg;
+$mnewin=~ s/\"/""/eg;
+#print "\n--> $newin\n";
+
+
+use DBI;
+
+open(OUTOAZ,"</home/powermail/etc/powermail.mysql");
+while(<OUTOAZ>)
+{
+$aj=$_;
+$aj=~ s/\n/""/eg;
+$aj=~ s/\r/""/eg;
+($mysqlhost,$mysqlport,$mysqlusername,$mysqlpass,$mysqldb)=split/\|/,$aj;
+#print "--> $mysqlhost,$mysqlport,$mysqlusername,$mysqlpass,$mysqldb";
+}
+close(OUTOAZ);
+my $dbh = DBI->connect("dbi:mysql:server=".$mysqlhost.";database=".$mysqldb.";host=".$mysqlhost."",$mysqlusername,$mysqlpass);
+die "\n Unable for connect to powermail MySQL server $DBI::errstr \n" unless $dbh;
+$gonow=1;
+
+if($newin eq "")
+{
+$gonow=0;
+print "please provide domainname and size. example : vdomaindetails deependhulla.com  (BLANK means both)";
+print "please provide domainname and size. example : vdomaindetails deependhulla.com  KB";
+print "please provide domainname and size. example : vdomaindetails deependhulla.com  MB";
+}
+$domaingot=$newin;
+
+$sqlin="SELECT `domain` FROM `domain` WHERE `domain` = '".$domaingot."' ";
+$table_data = $dbh->prepare($sqlin);
+$table_data->execute;
+$domanok=0;
+while(($gdomainname)=$table_data->fetchrow_array)
+{
+$domainok=1;
+}
+
+if($domainok==0 && $gonow==1){$gonow=0; print "\nDomain ".$domaingot." not on this server.\n";}
+
+if($gonow==1)
+{
+$sqlx="SELECT `username`, `password`, `name`, `maildir`, `quota`, `domain`, `created`, `modified`, `active` FROM `mailbox` WHERE `domain` = '".$newin."' ";
+
+#print "\n $sqlx \n";
+$table_data = $dbh->prepare($sqlx);
+$table_data->execute;
+##print '"Mailbox","Password","Details","Path","QuotaBytes","Created","Modify","Active","Type"';
+print '"Mailbox"';
+$showkb=1;
+$showmb=1;
+if($mnewin eq "KB"){$showmb=0;$showkb=1;}
+if($mnewin eq "MB"){$showmb=01;$showkb=0;}
+
+if($showkb==1){print ',"QuotaKB","CurrentKB"';}
+if($showmb==1){print ',"QuotaMB","CurrentMB"';}
+print ',"UsedPercentage"';
+while(($guser,$gpass,$gname,$gmaildir,$gquota,$gdom,$gcreate,$gmod,$gact)=$table_data->fetchrow_array)
+{
+##print "\n\"".$guser."\",\"".$gpass."\",\"".$gname."\",\"/home/powermail/domains/".$gmaildir."Maildir/\",\"".$gquota."\",\"".$gdom."\",\"".$gcreate."\",\"".$gmod."\",\"".$gact."\",\"MAILBOX\"";
+$gquota= $gquota /1024;
+$mbgquota= $gquota /1024;
+##print "\n\"".$guser."\",\"".$gquota."\"";
+
+$cmdx="du -s /home/powermail/domains/".$gmaildir." 2>/dev/null | cut -d \"/\" -f 1 ";
+$cmdxout=`$cmdx`;
+$cmdxout=~ s/\n/""/eg;
+$cmdxout=~ s/\r/""/eg;
+$cmdxout=~ s/\t/""/eg;
+$cmdxout=~ s/ /""/eg;
+$currentsize=$cmdxout;
+$mbcurrentsize=$currentsize /1024;
+$pert =0;
+$mbcurrentsize2 = sprintf "%.2f", $mbcurrentsize;
+print "\n\"".$guser."";
+if($gquota > 0){
+$pert= ($currentsize /$gquota) * 100;
+$pert2 = sprintf "%.2f", $pert;
+}
+if($gquota == 0){ $gquota ="NOQUOTA"; $mbgquota ="NOQUOTA";}
+
+if($showkb==1){print "\",\"".$gquota."\",\"".$currentsize."\"";}
+if($showmb==1){print "\",\"".$mbgquota."\",\"".$mbcurrentsize2."\"";}
+print ",\"".$pert2."\"";
+}
+
+}
+print "\n\n";

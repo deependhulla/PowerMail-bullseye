@@ -1,0 +1,108 @@
+.box .content.messages {
+	padding : 10px 20px 20px;
+	*padding: 20px 20px 20px;
+}
+
+.box .messages{
+	*zoom : 1;
+}
+
+.box .content .message {
+	position : relative;
+	display : inline-block;
+	background-position : 8px 10px;
+	background-repeat : no-repeat;
+	-webkit-border-radius : 4px;
+	-moz-border-radius : 4px;
+	border-radius : 4px;
+	margin : 10px 0 0;
+	padding : 0 0 0 25px;
+	line-height : 2.3em;
+	font-weight : bold;
+	clear : both;
+}
+
+.box .content .message img {
+	position : absolute;
+	top : 7px;
+	right : 7px;
+	cursor : pointer;
+}
+
+.box .messages button {
+        float : left;
+        background-repeat : repeat-x;
+        background-color : transparent;
+        -webkit-border-radius : 4px;
+        -moz-border-radius : 4px;
+        border-radius : 4px;
+        border : none;
+        outline : none;
+        padding : 0;
+        margin : 0 0 0 4px;
+        *margin :  -1px 0 0 4px;
+        font-family: Arial;
+        font-size: 11px;
+        font-weight: bold;
+        color : #FFFFFF;
+        text-transform: uppercase;
+        cursor : pointer;
+    overflow: visible;
+        width : auto;
+}
+
+.box .messages button {
+        margin :  0 0 0 4px;
+}
+
+@-moz-document url-prefix() { .box .messages button span{ margin :  -1px 0 0 0; } }
+.box .messages button span {
+        float : left;
+        background-repeat : repeat-x;
+        background-color : transparent;
+        -webkit-border-radius : 4px;
+        -moz-border-radius : 4px;
+        border-radius : 4px;
+        padding : 0 7px;
+        line-height : 1.64em;
+}
+
+.box .messages button:hover span {
+        background-position : left bottom;
+        border : 1px solid #2b2b2b;
+}
+
+
+
+
+.box .content .red {
+	display : block;
+	background-image : url(../images/icon-reddot.gif);
+	background-color : #fbf0f0;
+	border : 1px solid #b80000;
+	color : #b80000;
+}
+
+.box .content .green {
+	display : block;
+	background-image : url(../images/icon-greendot.gif);
+	background-color : #f6faf0;
+	border : 1px solid #6aa500;
+	color : #6aa500;
+}
+
+.box .content .blue {
+	display : block;
+	background-image : url(../images/icon-bluedot.gif);
+	background-color : #f1f6fc;
+	border : 1px solid #136bc5;
+	color : #136bc5;
+}
+
+.box .content .orange {
+	display : block;
+	background-image : url(../images/icon-orangedot.gif);
+	background-color : #fef9f1;
+	border : 1px solid #ed9d12;
+	color : #ed9d12;
+}

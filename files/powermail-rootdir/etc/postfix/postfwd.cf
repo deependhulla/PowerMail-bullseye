@@ -1,0 +1,1 @@
+id=R001; sender=~/.*/; action=rate(sender/1010/86400/REJECT only 1000 messages per day for $$sender)

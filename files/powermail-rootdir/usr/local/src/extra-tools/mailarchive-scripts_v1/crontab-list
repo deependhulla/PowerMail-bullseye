@@ -1,0 +1,3 @@
+MAILTO=""
+*/3 * * * * /usr/local/src/mailarchive-scripts/fetch-and-convert.sh
+* * * * * /usr/local/src/mailarchive-scripts/add-email-from-stage2-to-final-index.sh

@@ -62,6 +62,9 @@ sed -i "s/ohm8ahC2/`cat /usr/local/src/mysql-powermail-pass`/" /home/powermail/e
 sed -i "s/powermail\.mydomainname\.com/`hostname -f`/" /etc/dovecot/conf.d/10-ssl.conf
 sed -i "s/powermail\.mydomainname\.com/`hostname -f`/" /etc/apache2/sites-available/default-ssl.conf
 
+## use only for heavy load server 
+systemctl stop imapproxy.service 2>/dev/null
+systemctl disable imapproxy.service 2>/dev/null
 
 chown -R www-data:www-data /var/www/html
 

@@ -1,0 +1,6 @@
+MAILTO=""
+* * * * * /usr/share/webmin/powermail/cron-for-group-mail-list.sh
+#* * * * * /usr/share/webmin/powermail/cron-for-push-to-other-mailserver.sh
+1 5 * * * /usr/local/src/cert-renew-and-restart.sh
+1 6 * * * /usr/local/src/disk-space-alert.sh
+*/5 * * * * /usr/local/bin/mailwatch-postfix-relay

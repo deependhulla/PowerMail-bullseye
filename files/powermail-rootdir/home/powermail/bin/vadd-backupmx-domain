@@ -1,0 +1,87 @@
+#!/usr/bin/perl
+
+
+$newdomain=$ARGV[0];
+$newdomain=~ s/\n/""/eg;
+$newdomain=~ s/\t/""/eg;
+$newdomain=~ s/\r/""/eg;
+$newdomain=~ s/ /""/eg;
+$newdomain=~ s/;/""/eg;
+$newdomain=~ s/,/""/eg;
+$newdomain=~ s/'/""/eg;
+$newdomain=~ s/\"/""/eg;
+#print "--> $newdomain";
+
+$newpass=`pwgen -c -1 8`;
+$newpass=~ s/\n/""/eg;
+$newpass=~ s/\t/""/eg;
+$newpass=~ s/\r/""/eg;
+$newpass=~ s/ /""/eg;
+use DBI;
+
+open(OUTOAZ,"</home/powermail/etc/powermail.mysql");
+while(<OUTOAZ>)
+{
+$aj=$_;
+$aj=~ s/\n/""/eg;
+$aj=~ s/\r/""/eg;
+($mysqlhost,$mysqlport,$mysqlusername,$mysqlpass,$mysqldb)=split/\|/,$aj;
+#print "--> $mysqlhost,$mysqlport,$mysqlusername,$mysqlpass,$mysqldb";
+}
+close(OUTOAZ);
+my $dbh = DBI->connect("dbi:mysql:server=".$mysqlhost.";database=".$mysqldb.";host=".$mysqlhost."",$mysqlusername,$mysqlpass);
+die "\n Unable for connect to powermail MySQL server $DBI::errstr \n" unless $dbh;
+$addnow=1;
+
+if($newdomain eq "")
+{
+$addnow=0;
+print "please provide domainname for email example : vadddomain example.com ";
+}
+
+
+$sqlin="SELECT `domain` FROM `domain` WHERE `domain` = '".$newdomain."' ";
+$table_data = $dbh->prepare($sqlin);
+$table_data->execute;
+while(($gdomainname)=$table_data->fetchrow_array)
+{
+$addnow=0;
+print $gdomainname." domain already exists";
+}
+
+
+
+
+if($addnow==1)
+{
+
+$sqlx="INSERT INTO `admin` (`username`, `password`, `superadmin`, `created`, `modified`, `active`) VALUES ('postmaster\@".$newdomain."', '".$newpass."', '0', NOW(), NOW(), '1');";
+#print "\n $sqlx \n";
+$table_data = $dbh->prepare($sqlx);$table_data->execute;
+$sqlx="INSERT INTO `alias` (`address`, `goto`, `domain`, `created`, `modified`, `active`) VALUES ('postmaster\@".$newdomain."', 'postmaster\@".$newdomain."', '".$newdomain."', NOW(), NOW(), '1');";
+#print "\n $sqlx \n";
+$table_data = $dbh->prepare($sqlx);$table_data->execute;
+$sqlx="INSERT INTO `domain` (`domain`, `description`, `aliases`, `mailboxes`, `maxquota`, `quota`, `transport`, `backupmx`, `created`, `modified`, `active`) VALUES ('".$newdomain."', '".$newdomain."', '0', '0', '0', '0', 'relay', '1', NOW(), NOW(), '1');";
+#print "\n $sqlx \n";
+$table_data = $dbh->prepare($sqlx);$table_data->execute;
+$sqlx="INSERT INTO `domain_admins` (`username`, `domain`, `created`, `active`) VALUES ('postmaster\@".$newdomain."', '".$newdomain."', NOW(), '1');";
+#print "\n $sqlx \n";
+$table_data = $dbh->prepare($sqlx);$table_data->execute;
+
+$sqlx="INSERT INTO `mailbox` (`username`, `password`, `name`, `maildir`, `quota`, `local_part`, `domain`, `created`, `modified`, `active`) VALUES ('postmaster\@".$newdomain."', '".$newpass."', 'postmaster', '".$newdomain."/postmaster/', '0', 'postmaster', '".$newdomain."', NOW(), NOW(), '1');";
+#print "\n $sqlx \n";
+$table_data = $dbh->prepare($sqlx);$table_data->execute;
+
+$cmdx="echo \"".$newdomain."\" >> /opt/haraka-inbound/config/host_list";
+$cmdxout=`$cmdx`;
+
+
+print "New domain $newdomain added and postmaster password is : $newpass ";
+
+sleep(5);
+$cmdx="echo \"Welcome to powermail, this is a test Msg.\" | sendEmail -f postmaster\@".$newdomain." -t postmaster\@".$newdomain." -u \"Welcome to powermail\" -o tls=no";
+
+$cmdxout=`$cmdx`;
+}
+##############################
+print "\n";

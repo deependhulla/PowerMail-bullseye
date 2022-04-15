@@ -1,0 +1,6 @@
+# destination                   credentials
+#[mail.isp.example]              username:password
+# Alternative form:
+# [mail.isp.example]:submission username:password
+
+

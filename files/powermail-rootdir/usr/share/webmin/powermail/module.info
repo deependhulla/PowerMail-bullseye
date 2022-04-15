@@ -1,0 +1,9 @@
+readonly=1
+desc=PowerMail
+category=servers
+name=PowerMail
+risk=low medium high
+version=1.530
+longdesc=Configure all Email User settings.
+syslog=1
+depends=1.530

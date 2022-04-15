@@ -1,0 +1,10 @@
+#!/bin/sh
+
+#work for configrm of diman exist first
+#then ask why to del
+# then reconfirm to delete
+# delete from DB and folder too
+
+## use powermailadmin as of now
+
+

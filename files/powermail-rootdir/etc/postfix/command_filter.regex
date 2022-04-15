@@ -1,0 +1,5 @@
+# eXtremeSHOK.com
+ 
+# Fix Illegal address syntax, malformed emails that are surrounded in single quotes
+/^RCPT\s+TO:\s*<'([^[:space:]]+)'>(.*)/ RCPT TO:<$1>$2
+ 

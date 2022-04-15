@@ -1,0 +1,6 @@
+user = powermail
+password = ohm8ahC2
+hosts = localhost
+dbname = powermail
+query = SELECT domain FROM domain WHERE domain = '%s' AND backupmx = '1'
+
