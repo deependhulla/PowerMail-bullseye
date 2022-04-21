@@ -1,0 +1,4 @@
+# no scanning for mail restore or local connection
+From:           127.0.0.1      no
+# Default scan for all
+FromOrTo:       default        yes

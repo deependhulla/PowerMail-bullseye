@@ -1,0 +1,4 @@
+#sample blacklist
+From:           postmaster@test.com	yes
+# Default no BlackList
+FromOrTo:	default		no

@@ -1,0 +1,68 @@
+----------------------------------
+INSTALLATION INSTRUCTIONS
+----------------------------------
+
+Copy the file 'mailwatch' into /etc/cron.daily/:
+
+# cp tools/Cron_jobs/mailwatch /etc/cron.daily/.
+
+Copy and rename the file 'mailwatch.cron.monthly' into /etc/cron.monthly/mailwatch
+
+# cp tools/Cron_jobs/mailwatch.cron.monthly /etc/cron.monthly/mailwatch
+
+Copy in /usr/local/bin the following files:
+
+mailwatch_db_clean.php
+mailwatch_quarantine_maint.php
+mailwatch_quarantine_report.php
+mailwatch_geoip_update.php
+
+Verify if the 4 files are executable. If not, use "chmod +x" to correct this problem.
+
+-------------------------------------------
+Database cleanup of maillog records
+-------------------------------------------
+
+You need to edit conf.php and change the RECORD_DAYS_TO_KEEP definition.
+
+--------------------------------------------
+Quarantine Maintenance
+--------------------------------------------
+
+You need to edit in conf.php the QUARANTINE_DAYS_TO_KEEP variable.
+
+For MailScanner v4: Delete the clean.quarantine cron file.
+
+For MailScanner v5: Change the variable for Quarantine Retention to "q_days=0" in /etc/MailScanner/defaults.
+
+--------------------------------------------
+MailScanner Rule Editor (optional)
+--------------------------------------------
+
+Configure the file msre_reload to fit your need.
+
+Copy the file msre_reload into /etc/cron.d/.
+
+See the instructions in tools/MailScanner_rule_editor/INSTALL
+
+--------------------------------------------
+GeoIP Update
+--------------------------------------------
+
+MaxMind now requires a free license key to obtain GeoLite2 data.
+
+Visit www.maxmind.com to create an account and generate a license key.  
+MaxMind will ask questions to generate a key, any choice will work.
+Once you have generated a key, place the key in conf.php for MAXMIND_LICENSE_KEY.
+
+Default update is one time per month in /etc/cron.monthly/.
+
+The sudoers file /etc/sudoers.d/mailwatch must be installed.
+
+Maxmind is very strict about the update conditions. Be cautious not to poll Maxmind GeoIP too often with cron.
+
+ATTENTION:
+
+Several files have changed their name and location in MailWatch 1.2.0, 
+particularly the PHP files that are launched in cron and the Init script files.
+Please read the documentation carefully to remove old files during the upgrade.

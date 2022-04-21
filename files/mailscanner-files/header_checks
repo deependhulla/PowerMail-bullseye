@@ -1,0 +1,7 @@
+/^subject:/      INFO
+/^to:/           INFO
+/^from:/         INFO
+/^Subject:/      INFO
+/^To:/           INFO
+/^From:/         INFO
+/^Received:/	 HOLD

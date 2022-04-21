@@ -1,0 +1,240 @@
+# See /usr/share/postfix/main.cf.dist for a commented, more complete version
+
+
+# Debian specific:  Specifying a file name will cause the first
+# line of that file to be used as the name.  The Debian default
+# is /etc/mailname.
+#myorigin = /etc/mailname
+mail_name=PowerMail
+myorigin = /etc/mailname
+myhostname = apps.technoinfotech.com
+
+##for Archive
+#always_bcc = fullarchive@apps.technoinfotech.com
+##sender_bcc_maps = hash:/etc/postfix/sender_bcc
+##recipient_bcc_maps = hash:/etc/postfix/recipient_bcc
+
+## to use /etc/hosts first than dns
+#lmtp_host_lookup = native
+#smtp_host_lookup = native
+
+
+
+smtpd_banner = $myhostname ESMTP $mail_name smtp
+biff = no
+
+# appending .domain is the MUA's job.
+append_dot_mydomain = no
+
+# Uncomment the next line to generate "delayed mail" warnings
+#delay_warning_time = 4h
+
+readme_directory = no
+
+# See http://www.postfix.org/COMPATIBILITY_README.html -- default to 2 on
+# fresh installs.
+compatibility_level = 2
+
+
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+mydestination = localhost, localhost.localdomain
+relayhost = 
+## use below stype for smtp relay via online or other smtp
+#relayhost = [online.technomail.in]:587
+#relayhost = [192.168.1.254]:587
+smtp_sasl_password_maps = hash:/etc/postfix/relay_passwd
+#smtp_sasl_security_options =
+
+#mynetworks = 127.0.0.0/8
+## for webmin to use
+##mynetworks = 127.0.0.0/8  192.168.1.253/32 192.168.1.67/32 192.168.1.200/32
+## for best via file
+#mynetworks = hash:/etc/postfix/tcp_smtp_network_table_relay_network
+# if ipv6 too
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+
+recipient_delimiter = +
+# use no plus ..to avoid spam like maillinglist 
+#recipient_delimiter =
+
+## good for log check and  unique log id
+##enable_long_queue_ids = yes
+
+# useful when huge queue
+#hash_queue_depth = 6
+#hash_queue_names = incoming, active, deferred, bounce, defer, flush,hold, trace
+
+## for only iinternal so that haraka can be outside
+##inet_interfaces = loopback-only
+
+##inet_interfaces = loopback-only
+inet_interfaces = all
+
+inet_protocols = ipv4
+## if ipv6 also used
+#inet_protocols = all
+#inet_protocols = all
+
+
+content_filter =
+
+## useful to log via warning extra information in log for debug
+header_checks = regexp:/etc/postfix/header_checks
+
+
+
+mailbox_command =
+proxy_read_maps = $local_recipient_maps $mydestination $virtual_alias_maps $virtual_alias_domains $virtual_mailbox_maps $virtual_mailbox_domains $relay_recipient_maps $relay_domains $canonical_maps $sender_canonical_maps $recipient_canonical_maps $relocated_maps $transport_maps $mynetworks $virtual_mailbox_limit_maps
+relay_domains = proxy:mysql:/etc/postfix/sql/mysql_relay_domains_maps.cf
+##smtpd_command_filter = pcre:/etc/postfix/command_filter.regex
+sender_bcc_maps = hash:/etc/postfix/bcc_sender
+virtual_mailbox_domains = proxy:mysql:/etc/postfix/sql/mysql_virtual_domains_maps.cf
+virtual_alias_maps =
+   proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_maps.cf,
+   proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_domain_maps.cf,
+   proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_domain_catchall_maps.cf
+virtual_mailbox_maps =
+   proxy:mysql:/etc/postfix/sql/mysql_virtual_mailbox_maps.cf,
+   proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_domain_mailbox_maps.cf
+virtual_mailbox_base = /home/technomail/domains
+virtual_minimum_uid = 89
+virtual_uid_maps = static:89
+virtual_gid_maps = static:89
+virtual_mailbox_limit_maps = proxy:mysql:/etc/postfix/sql/mysql_virtual_mailbox_limit_maps.cf
+#virtual_mailbox_limit_override = yes
+#virtual_maildir_limit_message = Sorry, the user's maildir has overdrawn his diskspace quota, please try again later.
+#virtual_overquota_bounce = yes
+smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unlisted_sender,reject_unlisted_recipient,reject_non_fqdn_sender, reject_non_fqdn_recipient, reject_unauth_destination, reject_unauth_pipelining, reject_invalid_hostname, reject_unknown_sender_domain,check_recipient_access pcre:$config_directory/x-add-envelope-to,check_sender_access hash:/etc/postfix/sender_access,check_policy_service inet:127.0.0.1:12340  
+#####smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, reject_unlisted_sender,reject_unlisted_recipient,reject_non_fqdn_sender, reject_non_fqdn_recipient, reject_unauth_destination, reject_unauth_pipelining, reject_invalid_hostname, reject_unknown_sender_domain, check_policy_service unix:private/policy,check_recipient_access pcre:$config_directory/x-add-envelope-to, check_sender_access hash:/etc/postfix/sender_access,check_policy_service inet:127.0.0.1:12340
+
+smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
+
+smtpd_data_restrictions = reject_unauth_pipelining, reject_multi_recipient_bounce, permit
+##receive_override_options = no_address_mappings
+virtual_transport = dovecot
+#transport_destination_recipient_limit = 1
+dovecot_destination_recipient_limit = 1
+## for NFS to deliver one mail at a time : Postfix to only deliver to the same recipient one at a time.
+#dovecot_destination_concurrency_limit = 1
+message_size_limit = 20480000
+#content_filter = smtp-amavis:[127.0.0.1]:10024
+
+
+#bounce_queue_lifetime = 7d
+#maximal_queue_lifetime = 7d
+bounce_queue_lifetime = 4h
+maximal_queue_lifetime = 4h
+2bounce_notice_recipient = postmaster@apps.technoinfotech.com
+empty_address_recipient = postmaster@apps.technoinfotech.com
+
+# TLS parameters
+# See /usr/share/doc/postfix/TLS_README.gz in the postfix-doc package for
+# information on enabling SSL in the smtp client.
+
+
+smtpd_sasl_auth_enable = yes
+smtp_sasl_auth_enable = yes
+smtpd_sasl_security_options = noanonymous
+broken_sasl_auth_clients = yes
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+smtp_tls_CApath = /etc/ssl/certs
+smtpd_tls_CApath = /etc/ssl/certs
+tls_append_default_CA = yes
+smtpd_enforce_tls = no
+smtpd_tls_security_level = may
+smtp_tls_security_level = may
+smtp_sasl_security_options =
+smtpd_tls_auth_only = no
+smtpd_tls_received_header = yes
+smtp_tls_loglevel = 1
+smtpd_tls_loglevel = 1
+smtpd_tls_ciphers = high
+smtp_tls_ciphers = high
+tls_random_source = dev:/dev/urandom
+
+tls_preempt_cipherlist = yes
+smtpd_tls_cert_file = /etc/letsencrypt/live/apps.technoinfotech.com/fullchain.pem
+smtpd_tls_key_file = /etc/letsencrypt/live/apps.technoinfotech.com/privkey.pem
+smtp_tls_cert_file = /etc/letsencrypt/live/apps.technoinfotech.com/fullchain.pem
+smtp_tls_key_file = /etc/letsencrypt/live/apps.technoinfotech.com/privkey.pem
+
+
+
+
+
+
+
+
+
+smtpd_tls_mandatory_protocols=!SSLv2,!SSLv3
+smtp_tls_mandatory_protocols=!SSLv2,!SSLv3
+smtpd_tls_protocols=!SSLv2,!SSLv3
+smtp_tls_protocols=!SSLv2,!SSLv3
+smtpd_tls_eecdh_grade=strong
+smtp_tls_note_starttls_offer = yes
+smtpd_use_tls=yes
+smtp_use_tls=yes
+smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+smtpd_tls_session_cache_timeout = 3600s
+smtpd_tls_ask_ccert=yes
+smtpd_sasl_authenticated_header = yes
+#smtpd_sasl_path = smtpd
+# See /usr/share/doc/postfix/TLS_README.gz in the postfix-doc package for
+# information on enabling SSL in the smtp client.
+
+#smtpd_milters = inet:127.0.0.1:33333
+## for opendkim
+milter_default_action = accept
+milter_protocol = 6
+smtpd_milters =  inet:localhost:33333,inet:localhost:12345 
+#smtpd_milters = inet:localhost:12345
+non_smtpd_milters = inet:localhost:12345
+
+transport_maps = hash:/etc/postfix/transport_smtp_routes 
+
+## usefull during relay ..see above relay section too
+#smtp_sasl_password_maps = hash:/etc/postfix/transport_smtp_routes_sasl_passwd
+
+## Postfix send rate limit per user/domain via extra program
+## Guide for http://www.simonecaruso.com/limit-sender-rate-in-postfix/ 
+
+
+
+
+## only to use if its goinf to be used to send mail outside without domain check
+###disable_dns_lookups = yes
+
+## Default process limit
+##default_process_limit = 150
+
+## useful for high bulkmail or mailling list for processing faster
+## The qmgr_message_active_limit parameter limits the number of
+## messages in the active queue.
+## The qmgr_message_recipient_limit parameter limits the number of
+## in-memory recipients. This parameter also limits the size of the
+## short-term, in-memory destination status cache.
+## refere : https://wiki.list.org/DOC/MTA%20Performance%20Tuning%20Tips%20for%20Postfix
+
+#qmgr_message_active_limit = 40000
+#qmgr_message_recipient_limit = 40000
+
+
+#smtpd_recipient_limit = 1000
+## for MailScanner MSmilter
+qmqpd_authorized_clients = 127.0.0.1
+
+## perforance tunning codes for healthy server.
+#default_destination_concurrency_limit=1
+default_destination_recipient_limit=1
+#default_destination_concurrency_limit=50
+#default_destination_recipient_limit=50
+#default_process_limit=200
+#smtp_mx_session_limit=100
+#smtpd_client_connection_count_limit=100
+#smtp_destination_concurrency_limit=100
+#maximal_backoff_time = 1000s
+#minimal_backoff_time = 300s 

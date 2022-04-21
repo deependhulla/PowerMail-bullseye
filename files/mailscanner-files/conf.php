@@ -1,0 +1,325 @@
+<?php
+
+
+/*
+ * MailWatch for MailScanner
+ * Copyright (C) 2003-2011  Steve Freegard (steve@freegard.name)
+ * Copyright (C) 2011  Garrod Alwood (garrod.alwood@lorodoes.com)
+ * Copyright (C) 2014-2018  MailWatch Team (https://github.com/mailwatch/1.2.0/graphs/contributors)
+ *
+ * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ * In addition, as a special exception, the copyright holder gives permission to link the code of this program with
+ * those files in the PEAR library that are licensed under the PHP License (or with modified versions of those files
+ * that use the same license as those files), and distribute linked combinations including the two.
+ * You must obey the GNU General Public License in all respects for all of the code used other than those files in the
+ * PEAR library that are licensed under the PHP License. If you modify this program, you may extend this exception to
+ * your version of the program, but you are not obligated to do so.
+ * If you do not wish to do so, delete this exception statement from your version.
+ *
+ * You should have received a copy of the GNU General Public License along with this program; if not, write to the Free
+ * Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+///////////////////////////////////////////////////////////////////////////////
+// Settings - modify to suit your configuration
+///////////////////////////////////////////////////////////////////////////////
+
+// Debug messages
+define('DEBUG', false);
+
+// Define language (de, en, es-419, fr, it, ja, nl, pt_br);
+define('LANG', 'en');
+
+// Optional: If USER_SELECTABLE_LANG is defined and the value contains more than one language then the user gets a dropdown
+// in the gui to change the language of his browser. The selectable languages are defined as a comma separated list.
+#define('USER_SELECTABLE_LANG', 'de,en,es-419,fr,it,ja,nl,pt_br');
+define('USER_SELECTABLE_LANG', 'en');
+
+// Session Handling - conflicts can exist when the your environment makes use of multiple php sessions on the same server
+// to resolve this, uncomment the following option.  See https://github.com/mailwatch/MailWatch/issues/730 for more info
+// A valid session name may consists of digits, letters A to Z (both upper and lower case), comma and dash
+//define('SESSION_NAME', 'MailWatch');
+
+// Session Timeout - Sets the global session timeout value, default is 600 sec (10 minutes) if not defined
+// Range is 0 to 99999 seconds.  Setting to 0 will disable session timeout and active session statuses.
+// This can also be set individually per user in the MailWatch GUI for greater flexibility.
+define('SESSION_TIMEOUT', 600);
+
+// MaxMind License key
+// A free license key from MaxMind is required to download GeoLite2 data
+// https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases/
+// define('MAXMIND_LICENSE_KEY', 'mylicensekey');
+
+// Database settings
+//
+// As this file might be publically readable. It might be very userful to
+// have a completely separate username/password for this database.
+//
+// (IE) Do not use your main-global-admin accounts.
+//
+define('DB_TYPE', 'mysql');
+define('DB_USER', 'mailscanner');
+define('DB_PASS', 'zaohm8ahC2');
+define('DB_HOST', '127.0.0.1');
+define('DB_NAME', 'mailscanner');
+define('DB_DSN', DB_TYPE . '://' . DB_USER . ':' . DB_PASS . '@' . DB_HOST . '/' . DB_NAME);
+
+// LDAP settings for authentication
+define('USE_LDAP', false);
+define('LDAP_HOST', 'server.example.com');
+define('LDAP_PORT', '389');
+define('LDAP_DN', 'DC=example,DC=com');
+define('LDAP_USER', 'LDAPProxy@example.com'); // If no email set: cn=admin,dc=example,dc=com
+define('LDAP_PASS', 'secret');
+define('LDAP_FILTER', 'mail=%s'); //%s will be replaced by username eg. 'mail=%', 'mail=SMTP:%s', 'sAMAccountName=%s'
+define('LDAP_PROTOCOL_VERSION', 3);
+// can be set to 'proxyaddresses' or 'mail'. Please refer to your LDAP system manual for the right keyword
+define('LDAP_EMAIL_FIELD', 'mail');
+// Ldap field that is used to bind to the ldap server to check the credentials.
+// The value of the LDAP_USERNAME_FIELD will be extended by LDAP_BIND_PREFIX and LDAP_BIND_SUFFIX to created the binding username.
+// They should be all lowercase.
+define('LDAP_USERNAME_FIELD', 'cn');
+// define('LDAP_BIND_PREFIX', 'cn=');
+// define('LDAP_BIND_SUFFIX', ',' . LDAP_DN);
+// Microsoft Active Directory compatibility support for searches from Domain Base DN
+define('LDAP_MS_AD_COMPATIBILITY', true);
+
+// IMAP settings for authentication
+define('USE_IMAP', true);
+##define('IMAP_HOST', '{imap.example.com:993/imap/ssl}'); //for parameters check http://php.net/manual/en/function.imap-open.php
+define('IMAP_HOST', '{127.0.0.1:143/imap/novalidate-cert}'); //for parameters check http://php.net/manual/en/function.imap-open.php
+define('IMAP_AUTOCREATE_VALID_USER', true); // Set to true to autocreate a valid IMAP user in MailWatch database after sucessful login
+
+// Set Time Zone
+// See http://php.net/manual/en/timezones.php for a list of usable timezones.
+define('TIME_ZONE', 'Asia/Kolkata');
+// Date/Time settings
+define('DATE_FORMAT', '%d/%m/%y');
+define('TIME_FORMAT', '%H:%i:%s');
+
+// HTTP Proxy Settings
+define('USE_PROXY', false);
+define('PROXY_SERVER', '127.0.0.1');
+define('PROXY_PORT', '8080');
+// Can be set to HTTP or SOCKS5
+define('PROXY_TYPE', 'HTTP');
+// If left blank no authenication will be used.
+define('PROXY_USER', '');
+define('PROXY_PASS', '');
+
+// Paths
+define('MAILWATCH_HOME', '/var/www/html/mailscanner');
+define('MS_CONFIG_DIR', '/etc/MailScanner/');
+define('MS_SHARE_DIR', '/usr/share/MailScanner/'); // Path for ConfigDefs.pl file
+define('MS_LIB_DIR', '/usr/lib/MailScanner/'); // Path for sophos-wrapper file
+define('MS_EXECUTABLE_PATH', '/usr/sbin/MailScanner');
+define('IMAGES_DIR', '/images/'); // Both leading and trailing slash needed
+define('SA_DIR', '/usr/bin/');
+define('SA_RULES_DIR', '/usr/share/spamassassin/');
+define('SA_PREFS', MS_CONFIG_DIR . 'spamassassin.conf'); // spam.assassin.prefs.conf in V4, spamassassin.conf in V5
+define('TEMP_DIR', '/tmp/');
+
+// Define MailWatch logo name
+define('MW_LOGO', 'mailwatch-logo.png');
+
+// Log file location
+define('MS_LOG', '/var/log/mail.log'); // Where is MailScanner logging to?
+define('MAIL_LOG', '/var/log/mail.log'); // MTA log file, it's diferent between distributions and sometimes MTA
+
+// Default number of results on Recent Messages and Message Listing Report.
+define('MAX_RESULTS', 50);
+// Default refresh rate in seconds for the Recent Messages screen.
+define('STATUS_REFRESH', 30);
+
+// Display Client IP Address on message listing
+define('DISPLAY_IP', false);
+// Set to true if you want to DNS resolve the IP address displayed (will slow page load).
+define('RESOLVE_IP_ON_DISPLAY', false);
+
+// Set the following to a value greater than zero to limit the length of the
+// From, To and Subject columns in the 'Recent Messages' screen.
+define('FROMTO_MAXLEN', 50);
+define('SUBJECT_MAXLEN', 0);
+
+// Define how many days of emails to keep.
+define('RECORD_DAYS_TO_KEEP', 60);
+
+// Define how many days to audit logs to keep.
+define('AUDIT_DAYS_TO_KEEP', 60);
+
+// Show Software Version tab (only Admins can see it).
+define('SHOW_SFVERSION', false);
+
+// Show Documentation tab (deprecated feature, should always be false, use at your own risk).
+define('SHOW_DOC', false);
+
+// Show supplemental Postfix info in report, enable when using Postix_relay tool.
+define('SHOW_MORE_INFO_ON_REPORT_GRAPH', true);
+
+/* Mailwatch Interface Settings */
+define('MAILWATCH_MAIL_HOST', '127.0.0.1');
+define('MAILWATCH_MAIL_PORT', '25');
+// This is required if you use a remote SMTP server to send MailWatch emails (reports etc).
+//define('MAILWATCH_SMTP_HOSTNAME', gethostname());
+// Change with a fully qualified email address
+define('MAILWATCH_FROM_ADDR', 'postmaster@powermail.mydomainname.com');
+// Don't add trailing slash
+define('MAILWATCH_HOSTURL', 'http://' . rtrim(gethostname()) . '/mailscanner');
+
+/* Quarantine settings */
+// The quarantine flag is available from MailScanner 4.43.
+// It will drammatically improved the speed of quarantine operations
+// but requires that you use the quarantine_maint.php in place of
+// the clean.quarantine script provided with MailScanner.
+define('QUARANTINE_USE_FLAG', true);
+define('QUARANTINE_DAYS_TO_KEEP', 30);
+//Set QUARANTINE_FILTERS_COMBINED to true to combine quarantine report into a single report when user filters are present
+define('QUARANTINE_FILTERS_COMBINED', false);
+define('QUARANTINE_REPORT_FROM_NAME', 'MailWatch for MailScanner');
+define('QUARANTINE_REPORT_SUBJECT', 'Message Quarantine Report');
+define('QUARANTINE_SUBJECT', 'Message released from quarantine');
+define('QUARANTINE_MSG_BODY', 'Please find the original message that was quarantined attached to this mail.
+
+Regards,
+Postmaster');
+define('QUARANTINE_REPORT_DAYS', 7);
+// Set QUARANTINE_USE_SENDMAIL to true to send released email as original email using sendmail,
+// false to send it as an attachment to a release message.
+define('QUARANTINE_USE_SENDMAIL', false);
+define('QUARANTINE_SENDMAIL_PATH', '/usr/sbin/sendmail');
+/* End Quarantine settings */
+
+// This turns virus names into links that can be used to get more information
+// about a given virus or virus alias.  Comment out or set to false to disable.
+// As of release 1.2.3 there is no reliable multivendor sources:
+// if you still want to enable this feature remember to substitute the url param containing the virus name with %s
+// look at the commented example below
+//define('VIRUS_INFO', 'http://www.securelist.com/en/descriptions?words=%s&amp;behavior=&amp;Search=Search&amp;search_type=1');
+define('VIRUS_INFO', false);
+
+// Display Virus on message listing
+define('DISPLAY_VIRUS_REPORT', false);
+
+// Override VIRUS_REGEX??
+// define('VIRUS_REGEX', '/(\S+) was infected by (\S+)/'); // SophosSAVI
+
+// When filtering data - only use the envelope 'To' address or 'To' domain.
+// This greatly increases perfomance as MySQL will not use indexes when
+// two different fields are OR'd together.
+define('FILTER_TO_ONLY', true);
+
+// Set this to true to hide things that won't work correctly if you have
+// a distributed set of MailScanners logging to a single database.
+define('DISTRIBUTED_SETUP', false);
+
+// PHP memory limit when viewing details and attachments of messages
+// "128M" should be fine in most cases, but you may need to increase it if
+// you're having problems viewing the details of large messages.
+define('MEMORY_LIMIT', '128M');
+
+// Relative path to RPC server
+define('RPC_RELATIVE_PATH', '/mailscanner');
+// This defines who is allowed to use the RPC service using a space separated list
+// of allowed clients as IP adddresses or in network/cidr (192.168.123.0/24) format.
+// You can also use 'allprivate' to specify all private address ranges or 'local24'
+// to specify the local subnet as a class C which is derived by looking up the
+// hostname of the machine and changing the last octet to '0' and specifying
+// it as a /24.  No connections are allowed by default.
+define('RPC_ALLOWED_CLIENTS', '');
+// RPC-only mode - used primarily for testing (you shouldn't need to enable this).
+define('RPC_ONLY', false);
+// RPC port (defaults to 80 if not supplied).
+// define('RPC_PORT', 80);
+// RPC over SSL? (defaults to port 443 unless RPC_PORT is supplied).
+// define('RPC_SSL', true);
+// Enter the remote servers as space separated list where rpc call shall be executed at (eg. for postfix queue).
+// define('RPC_REMOTE_SERVER', 'other.example.com 10.0.0.2');
+
+// Display the inbound/outbound mail queue lengths.
+// Note: this only works with Exim and Sendmail.
+// You must also run /usr/local/bin/mailwatch_sendmail_queue.php from CRON
+// and uncomment MAIL_SENDER, EXIM_QUEUE_IN and EXIM_QUEUE_OUT.
+// define('MAILQ', true);
+// Select if we use envelope-sender or sender (From:) in Mail Queue for Exim or Sendmail
+// Value: 'envelopesender' or 'sender'
+// define('MAIL_SENDER', 'envelopesender');
+// If you change the lines below, you need to change /etc/sudoers.d/mailwatch according.
+// Command to read Exim inbound Mail Queue
+// define('EXIM_QUEUE_IN', '/usr/sbin/exim -bpc');
+// Command to read Exim outbound Mail Queue
+// define('EXIM_QUEUE_OUT', '/usr/sbin/exim -bpc -DOUTGOING');
+// Command to read Sendmail inbound Mail Queue
+// define('SENDMAIL_QUEUE_IN', '/usr/bin/mailq  -bp -OQueueDirectory=/var/spool/mqueue.in');
+// Command to read Sendmail outbound Mail Queue
+// define('SENDMAIL_QUEUE_OUT', '/usr/bin/mailq -bp');
+
+// Do you want an audit trail?
+define('AUDIT', false);
+
+// Do you want the whitelist/blacklist functionality enabled?
+// You'll need to configure MailScanner to use it accordingly.
+define('LISTS', false);
+
+// Force SSL connections only?
+define('SSL_ONLY', false);
+
+// Strip HTML from messages in the quarantine when viewed?
+// This is probably a good idea.
+define('STRIP_HTML', true);
+// List of allowed tags - set as blank to strip everything.
+define('ALLOWED_TAGS', '<a><br><b><body><div><font><h1><h2><h3><h4><head><html><i><li><ol><p><small><span><strong><table><title><tr><td><th><u><ul>');
+
+// Enable MailScanner Rule Editor
+// Initially disabled as other config needs to be done to use it.
+define('MSRE', false);
+define('MSRE_RELOAD_INTERVAL', 5);
+define('MSRE_RULESET_DIR', '/etc/MailScanner/rules');
+
+// Spamassassin sa-learn max message size (Spamassassin Version >= 3.4.0).
+// Size is in bytes
+define('SA_MAXSIZE', 0);
+
+// Hide High Spam and high mcp from regular users.
+// Prevent regular users from seeing high spam and high mcp.
+define('HIDE_HIGH_SPAM', false);
+
+// Hide Non Spam from quarantine reports
+define('HIDE_NON_SPAM', false);
+
+// Hide Unknown Mail from quarantine reports
+define('HIDE_UNKNOWN', false);
+
+// Quarantine Auto Release
+// Set true to allow auto release of quarantined items from quarantine report.
+define('AUTO_RELEASE', false);
+
+// Give Domain Admins ability to release dangerous content, like viruses
+define('DOMAINADMIN_CAN_RELEASE_DANGEROUS_CONTENTS', false);
+define('DOMAINADMIN_CAN_SEE_DANGEROUS_CONTENTS', false);
+
+/* Password Reset */
+// Give users the ability to reset a forgotten password.
+define('PWD_RESET', false);
+// Number of hours link is valid for.
+define('RESET_LINK_EXPIRE', 1);
+// Set the following 2 variables (and uncomment) if you wish to define
+// an alternative sender name and address for password resets.
+// NOTE: Both must be set, otherwise it will use the default settings.
+// define('PWD_RESET_FROM_NAME', 'Some other name'); // Set if you wish reset email sent from alternative name.
+// define('PWD_RESET_FROM_ADDRESS', 'support@yourdomain.com'); // Set is you wish reset email sent from alternative address.
+/* End Password Reset */
+
+// Interval for the traffic chart for admins in minutes (default is 60, max 1440 (24h))
+define('STATUSGRAPH_INTERVAL', 60);
+
+//Allow domain admins to create/edit/delete other domain admins from the same domain (not recommended, only for backward compatibility)
+//define('ENABLE_SUPER_DOMAIN_ADMINS',true);
+//Allow the username of domain admins and normal users to not be in mail format (not recommended, only for backward compatibility)
+//define('ALLOW_NO_USER_DOMAIN',true);
+

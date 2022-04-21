@@ -1,0 +1,29 @@
+For making MailWatch work with Debian 11 and  PHP 8 
+Fixed few code-file to avoid error : PHP Fatal error:  Array and string offset access syntax 
+
+changed in MailWatch-1.2.17/mailscanner/lib/ForceUTF8/Encoding.php
+-------------------------------------------------------
+196c196
+<         $c1 = $text{$i};
+---
+>         $c1 = $text[$i];
+198,200c198,200
+<           $c2 = $i+1 >= $max? "\x00" : $text{$i+1};
+<           $c3 = $i+2 >= $max? "\x00" : $text{$i+2};
+<           $c4 = $i+3 >= $max? "\x00" : $text{$i+3};
+---
+>           $c2 = $i+1 >= $max? "\x00" : $text[$i+1];
+>           $c3 = $i+2 >= $max? "\x00" : $text[$i+2];
+>           $c4 = $i+3 >= $max? "\x00" : $text[$i+3];
+
+-------------------------------------------------------
+changed in MailWatch-1.2.17/mailscanner/filter.inc.php
+
+222c222
+<         } elseif ($val[2]!=='' && $val[2]{0} === '!') {
+---
+>         } elseif ($val[2]!=='' && $val[2][0] === '!') {
+-------------------------------------------------------
+
+
+
