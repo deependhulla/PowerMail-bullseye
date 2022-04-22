@@ -39,7 +39,8 @@ mysqladmin -uroot reload
 mysqladmin -uroot refresh
 
 files/extra-files/etc-config-backup.sh
-apt-get -y install rsyslog-mysql
+##If need all rsyslog in MySQL DB
+##apt-get -y install rsyslog-mysql
 
 ## copy apache2 and other config html files cron and rsyslog 
 /bin/cp -pR files/web-rootdir/* /

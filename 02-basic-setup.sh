@@ -95,10 +95,10 @@ echo 'DAEMON_OPTS="-F 1 -x "' >  /etc/default/chrony
 systemctl restart chrony 
 systemctl restart rsyslog 
 
-apt-get -y install unbound 2>/dev/null 1>/dev/null
-
+apt-get -y install unbound 1>/dev/null 2>/dev/null
+echo "updating unbound config to avoid ipv6 default"
 /bin/cp -pRv files/unbound.conf /etc/unbound/
-systemctl restart unbound 
+systemctl restart unbound 1>/dev/null 2>/dev/null 
 
 
 files/extra-files/etc-config-backup.sh
