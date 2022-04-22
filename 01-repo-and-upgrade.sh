@@ -35,6 +35,8 @@ apt-get -y install openssh-server iptraf-ng telnet iputils-ping debconf-utils pw
 ## for proxmox/kvm better preformance
 #apt-get -y install qemu-guest-agent
 
+## if on Consle need Mouse to use for copy paste use gpm
+#apt-get install gpm
 
 #hostname -f
 #ping `hostname -f` -c 2

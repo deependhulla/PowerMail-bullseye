@@ -78,6 +78,9 @@ echo $WEPASSVPOP > /usr/local/src/manager-powermail-pass
 /usr/share/webmin/changepass.pl  /etc/webmin manager `cat /usr/local/src/manager-powermail-pass`
 cd -
 
+##disable this program as not needed
+systemctl disable ModemManager
+systemctl disable wpa_supplicant
 
 /etc/init.d/opendkim stop
 /etc/init.d/opendkim start
