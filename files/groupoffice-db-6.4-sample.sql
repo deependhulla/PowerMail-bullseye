@@ -1,8 +1,8 @@
--- MariaDB dump 10.19  Distrib 10.5.15-MariaDB, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.17  Distrib 10.3.22-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: groupoffice
 -- ------------------------------------------------------
--- Server version	10.5.15-MariaDB-0+deb11u1
+-- Server version	10.3.22-MariaDB-0+deb10u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -18,6 +18,7 @@
 --
 -- Table structure for table `addressbook_address`
 --
+use groupoffice;
 
 DROP TABLE IF EXISTS `addressbook_address`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -63,11 +64,11 @@ CREATE TABLE `addressbook_addressbook` (
   `filesFolderId` int(11) DEFAULT NULL,
   `salutationTemplate` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
+  KEY `acid` (`aclId`),
   KEY `createdBy` (`createdBy`),
-  KEY `aclId` (`aclId`) USING BTREE,
   CONSTRAINT `addressbook_addressbook_ibfk_1` FOREIGN KEY (`aclId`) REFERENCES `core_acl` (`id`),
   CONSTRAINT `addressbook_addressbook_ibfk_2` FOREIGN KEY (`createdBy`) REFERENCES `core_user` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -76,7 +77,7 @@ CREATE TABLE `addressbook_addressbook` (
 
 LOCK TABLES `addressbook_addressbook` WRITE;
 /*!40000 ALTER TABLE `addressbook_addressbook` DISABLE KEYS */;
-INSERT INTO `addressbook_addressbook` VALUES (1,'Shared',10,1,NULL,'Dear [if {{contact.prefixes}}]{{contact.prefixes}}[else][if !{{contact.gender}}]Ms./Mr.[else][if {{contact.gender}}==\"M\"]Mr.[else]Ms.[/if][/if][/if][if {{contact.middleName}}] {{contact.middleName}}[/if] {{contact.lastName}}'),(2,'Users',30,1,NULL,'Dear [if {{contact.prefixes}}]{{contact.prefixes}}[else][if !{{contact.gender}}]Ms./Mr.[else][if {{contact.gender}}==\"M\"]Mr.[else]Ms.[/if][/if][/if][if {{contact.middleName}}] {{contact.middleName}}[/if] {{contact.lastName}}'),(3,'postmaster',62,2,NULL,'Dear [if {{contact.prefixes}}]{{contact.prefixes}}[else][if !{{contact.gender}}]Ms./Mr.[else][if {{contact.gender}}==\"M\"]Mr.[else]Ms.[/if][/if][/if][if {{contact.middleName}}] {{contact.middleName}}[/if] {{contact.lastName}}');
+INSERT INTO `addressbook_addressbook` VALUES (1,'Shared',10,1,NULL,'Dear [if {{contact.prefixes}}]{{contact.prefixes}}[else][if !{{contact.gender}}]Ms./Mr.[else][if {{contact.gender}}==\"M\"]Mr.[else]Ms.[/if][/if][/if][if {{contact.middleName}}] {{contact.middleName}}[/if] {{contact.lastName}}'),(2,'Users',30,1,NULL,'Dear [if {{contact.prefixes}}]{{contact.prefixes}}[else][if !{{contact.gender}}]Ms./Mr.[else][if {{contact.gender}}==\"M\"]Mr.[else]Ms.[/if][/if][/if][if {{contact.middleName}}] {{contact.middleName}}[/if] {{contact.lastName}}');
 /*!40000 ALTER TABLE `addressbook_addressbook` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -127,11 +128,6 @@ CREATE TABLE `addressbook_contact` (
   KEY `addressBookId` (`addressBookId`),
   KEY `modifiedBy` (`modifiedBy`),
   KEY `vcardBlobId` (`vcardBlobId`),
-  KEY `modifiedAt` (`modifiedAt`),
-  KEY `lastName` (`lastName`),
-  KEY `addressbook_contact_addressBookId_lastName_index` (`addressBookId`,`lastName`),
-  KEY `addressbook_contact_addressBookId_name_index` (`addressBookId`,`name`),
-  KEY `addressbook_contact_isOrganization_index` (`isOrganization`),
   CONSTRAINT `addressbook_contact_ibfk_1` FOREIGN KEY (`addressBookId`) REFERENCES `addressbook_addressbook` (`id`),
   CONSTRAINT `addressbook_contact_ibfk_2` FOREIGN KEY (`photoBlobId`) REFERENCES `core_blob` (`id`),
   CONSTRAINT `addressbook_contact_ibfk_3` FOREIGN KEY (`modifiedBy`) REFERENCES `core_user` (`id`) ON DELETE SET NULL,
@@ -329,32 +325,6 @@ LOCK TABLES `addressbook_phone_number` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `addressbook_portlet_birthday`
---
-
-DROP TABLE IF EXISTS `addressbook_portlet_birthday`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `addressbook_portlet_birthday` (
-  `userId` int(11) NOT NULL,
-  `addressBookId` int(11) NOT NULL,
-  PRIMARY KEY (`userId`,`addressBookId`),
-  KEY `addressbook_portlet_birthday_fk2` (`addressBookId`),
-  CONSTRAINT `addressbook_portlet_birthday_fk1` FOREIGN KEY (`userId`) REFERENCES `core_user` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `addressbook_portlet_birthday_fk2` FOREIGN KEY (`addressBookId`) REFERENCES `addressbook_addressbook` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `addressbook_portlet_birthday`
---
-
-LOCK TABLES `addressbook_portlet_birthday` WRITE;
-/*!40000 ALTER TABLE `addressbook_portlet_birthday` DISABLE KEYS */;
-/*!40000 ALTER TABLE `addressbook_portlet_birthday` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `addressbook_url`
 --
 
@@ -389,8 +359,6 @@ DROP TABLE IF EXISTS `addressbook_user_settings`;
 CREATE TABLE `addressbook_user_settings` (
   `userId` int(11) NOT NULL,
   `defaultAddressBookId` int(11) DEFAULT NULL,
-  `lastAddressBookId` int(11) DEFAULT NULL,
-  `startIn` enum('allcontacts','starred','default','remember') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'allcontacts',
   PRIMARY KEY (`userId`),
   KEY `defaultAddressBookId` (`defaultAddressBookId`),
   CONSTRAINT `addressbook_user_settings_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `core_user` (`id`) ON DELETE CASCADE,
@@ -404,7 +372,7 @@ CREATE TABLE `addressbook_user_settings` (
 
 LOCK TABLES `addressbook_user_settings` WRITE;
 /*!40000 ALTER TABLE `addressbook_user_settings` DISABLE KEYS */;
-INSERT INTO `addressbook_user_settings` VALUES (1,1,NULL,'allcontacts'),(2,3,NULL,'allcontacts');
+INSERT INTO `addressbook_user_settings` VALUES (1,1);
 /*!40000 ALTER TABLE `addressbook_user_settings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -422,16 +390,14 @@ CREATE TABLE `bookmarks_bookmark` (
   `name` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
   `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `logo` binary(40) DEFAULT NULL,
+  `logo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `openExtern` tinyint(1) NOT NULL DEFAULT 1,
   `behaveAsModule` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `createdBy` (`createdBy`),
   KEY `categoryId` (`categoryId`),
-  KEY `core_blob_bookmark_logo_idx` (`logo`),
   CONSTRAINT `bookmarks_bookmark_ibfk_1` FOREIGN KEY (`createdBy`) REFERENCES `core_user` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `bookmarks_bookmark_ibfk_2` FOREIGN KEY (`categoryId`) REFERENCES `bookmarks_category` (`id`),
-  CONSTRAINT `core_blob_bookmark_logo` FOREIGN KEY (`logo`) REFERENCES `core_blob` (`id`) ON UPDATE NO ACTION
+  CONSTRAINT `bookmarks_bookmark_ibfk_2` FOREIGN KEY (`categoryId`) REFERENCES `bookmarks_category` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -531,7 +497,7 @@ CREATE TABLE `cal_calendars` (
   KEY `group_id` (`group_id`),
   KEY `project_id` (`project_id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -540,7 +506,7 @@ CREATE TABLE `cal_calendars` (
 
 LOCK TABLES `cal_calendars` WRITE;
 /*!40000 ALTER TABLE `cal_calendars` DISABLE KEYS */;
-INSERT INTO `cal_calendars` VALUES (1,1,1,38,'System Administrator',0,0,NULL,1800,0,0,0,1,'',0,0,2,1,0,'','',1),(2,1,2,59,'postmaster',0,0,NULL,1800,0,0,0,1,'',0,0,14,1,0,'','',1);
+INSERT INTO `cal_calendars` VALUES (1,1,1,38,'System Administrator',0,0,NULL,1800,0,0,0,1,'',0,0,2,1,0,'','',1);
 /*!40000 ALTER TABLE `cal_calendars` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -837,7 +803,7 @@ CREATE TABLE `cal_settings` (
 
 LOCK TABLES `cal_settings` WRITE;
 /*!40000 ALTER TABLE `cal_settings` DISABLE KEYS */;
-INSERT INTO `cal_settings` VALUES (1,NULL,'EBF1E2',1,1,1),(2,NULL,'EBF1E2',2,1,1);
+INSERT INTO `cal_settings` VALUES (1,NULL,'EBF1E2',1,1,1);
 /*!40000 ALTER TABLE `cal_settings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -941,6 +907,34 @@ LOCK TABLES `cal_visible_tasklists` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `comments_attachment`
+--
+
+DROP TABLE IF EXISTS `comments_attachment`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `comments_attachment` (
+  `commentId` int(11) NOT NULL,
+  `blobId` binary(40) NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`commentId`,`blobId`),
+  KEY `fk_comments_attachment_comments_comment1_idx` (`commentId`),
+  KEY `fk_comments_attachment_core_blob1_idx` (`blobId`),
+  CONSTRAINT `fk_comments_attachment_comments_comment1` FOREIGN KEY (`commentId`) REFERENCES `comments_comment` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
+  CONSTRAINT `fk_comments_attachment_core_blob1` FOREIGN KEY (`blobId`) REFERENCES `core_blob` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `comments_attachment`
+--
+
+LOCK TABLES `comments_attachment` WRITE;
+/*!40000 ALTER TABLE `comments_attachment` DISABLE KEYS */;
+/*!40000 ALTER TABLE `comments_attachment` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `comments_comment`
 --
 
@@ -950,7 +944,6 @@ DROP TABLE IF EXISTS `comments_comment`;
 CREATE TABLE `comments_comment` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `createdAt` datetime NOT NULL,
-  `date` datetime DEFAULT NULL,
   `entityId` int(11) NOT NULL,
   `entityTypeId` int(11) NOT NULL,
   `createdBy` int(11) DEFAULT NULL,
@@ -964,7 +957,6 @@ CREATE TABLE `comments_comment` (
   KEY `fk_comments_comment_core_user2_idx` (`modifiedBy`),
   KEY `entityTypeId` (`entityTypeId`),
   KEY `section` (`section`),
-  KEY `date` (`date`),
   CONSTRAINT `comments_comment_ibfk_1` FOREIGN KEY (`entityTypeId`) REFERENCES `core_entity` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
   CONSTRAINT `fk_comments_comment_core_user1` FOREIGN KEY (`createdBy`) REFERENCES `core_user` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION,
   CONSTRAINT `fk_comments_comment_core_user2` FOREIGN KEY (`modifiedBy`) REFERENCES `core_user` (`id`) ON DELETE SET NULL ON UPDATE NO ACTION
@@ -978,35 +970,6 @@ CREATE TABLE `comments_comment` (
 LOCK TABLES `comments_comment` WRITE;
 /*!40000 ALTER TABLE `comments_comment` DISABLE KEYS */;
 /*!40000 ALTER TABLE `comments_comment` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `comments_comment_attachment`
---
-
-DROP TABLE IF EXISTS `comments_comment_attachment`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `comments_comment_attachment` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `commentId` int(11) NOT NULL,
-  `blobId` binary(40) DEFAULT NULL,
-  `name` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `comments_comment_attachment_comments_comment_id_fk` (`commentId`),
-  KEY `comments_comment_attachment_core_blob_id_fk` (`blobId`),
-  CONSTRAINT `comments_comment_attachment_comments_comment_id_fk` FOREIGN KEY (`commentId`) REFERENCES `comments_comment` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `comments_comment_attachment_core_blob_id_fk` FOREIGN KEY (`blobId`) REFERENCES `core_blob` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `comments_comment_attachment`
---
-
-LOCK TABLES `comments_comment_attachment` WRITE;
-/*!40000 ALTER TABLE `comments_comment_attachment` DISABLE KEYS */;
-/*!40000 ALTER TABLE `comments_comment_attachment` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1095,17 +1058,15 @@ DROP TABLE IF EXISTS `core_acl`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `core_acl` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ownedBy` int(11) DEFAULT NULL,
+  `ownedBy` int(11) NOT NULL,
   `usedIn` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `modifiedAt` datetime DEFAULT NULL,
   `entityTypeId` int(11) DEFAULT NULL,
   `entityId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `core_acl_ibfk_1` (`entityTypeId`),
-  KEY `ownedBy` (`ownedBy`),
-  CONSTRAINT `core_acl_ibfk_1` FOREIGN KEY (`entityTypeId`) REFERENCES `core_entity` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `core_acl_ibfk_2` FOREIGN KEY (`ownedBy`) REFERENCES `core_user` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  CONSTRAINT `core_acl_ibfk_1` FOREIGN KEY (`entityTypeId`) REFERENCES `core_entity` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1114,7 +1075,7 @@ CREATE TABLE `core_acl` (
 
 LOCK TABLES `core_acl` WRITE;
 /*!40000 ALTER TABLE `core_acl` DISABLE KEYS */;
-INSERT INTO `core_acl` VALUES (1,1,'core_group.aclId','2020-07-25 10:50:42',1,1),(2,1,'core_group.aclId','2020-07-25 10:50:42',1,2),(3,1,'core_group.aclId','2020-07-25 10:50:43',1,3),(4,1,'core_group.aclId','2020-07-25 10:50:43',1,4),(5,1,'core_module.aclId','2020-07-25 10:50:43',13,1),(6,1,'core_entity.defaultAclId','2020-07-25 10:50:43',NULL,NULL),(7,1,'core_entity.defaultAclId','2020-07-25 10:50:43',NULL,NULL),(8,1,'go_templates.acl_id','2020-07-25 10:50:43',20,1),(9,1,'core_module.aclId','2020-07-25 10:50:44',13,2),(10,1,'addressbook_addressbook.aclId','2020-07-25 10:50:44',21,1),(11,1,'core_module.aclId','2020-07-25 10:50:44',13,3),(12,1,'notes_note_book.aclId','2020-07-25 10:50:44',25,65),(13,1,'core_module.aclId','2020-07-25 10:50:44',13,4),(14,1,'core_module.aclId','2020-07-25 10:50:45',13,5),(15,1,'core_module.aclId','2020-07-25 10:50:45',13,6),(16,1,'core_module.aclId','2020-07-25 10:50:45',13,7),(17,1,'core_entity.defaultAclId','2020-07-25 10:50:46',NULL,NULL),(18,1,'core_module.aclId','2020-07-25 10:50:46',13,8),(20,1,'core_module.aclId','2020-07-25 10:50:46',13,10),(21,1,'core_module.aclId','2020-07-25 10:50:46',13,11),(22,1,'fs_templates.acl_id','2020-07-25 10:50:46',20,1),(23,1,'fs_templates.acl_id','2020-07-25 10:50:46',20,2),(24,1,'core_module.aclId','2020-07-25 10:50:47',13,12),(25,1,'core_module.aclId','2020-07-25 10:50:47',13,13),(26,1,'core_module.aclId','2020-07-25 10:50:47',13,14),(27,1,'core_module.aclId','2020-07-25 10:50:47',13,15),(28,1,'core_module.aclId','2020-07-25 10:50:47',13,16),(29,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(30,1,'addressbook_addressbook.aclId','2020-07-25 11:09:13',21,2),(31,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(32,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(33,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(34,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(35,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(36,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(37,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(38,1,'cal_calendars.acl_id','2020-07-25 11:09:14',30,1),(39,1,'fs_folders.acl_id','2020-07-25 11:09:20',33,4),(40,1,'core_module.aclId','2020-07-25 11:12:26',13,17),(41,1,'core_module.aclId','2020-07-25 11:12:26',13,18),(42,1,'core_module.aclId','2020-07-25 11:12:32',13,19),(43,1,'core_module.aclId','2020-07-25 11:12:35',13,20),(44,1,'core_module.aclId','2020-07-25 11:12:39',13,21),(45,1,'core_module.aclId','2020-07-25 11:12:54',13,22),(46,1,'core_module.aclId','2020-07-25 11:12:58',13,23),(47,1,'core_module.aclId','2020-07-25 11:13:10',13,24),(48,1,'core_module.aclId','2020-07-25 11:13:15',13,25),(49,1,'core_module.aclId','2020-07-25 11:13:24',13,26),(50,1,'fs_folders.acl_id','2020-07-25 11:14:12',NULL,NULL),(51,1,'fs_folders.acl_id','2020-07-25 11:14:12',33,5),(52,1,'fb_acl','2022-06-07 07:31:04',NULL,NULL),(53,1,'core_module.aclId','2022-06-07 07:36:54',13,27),(54,1,'readonly','2022-06-07 07:36:55',NULL,NULL),(55,2,'fb_acl','2022-06-07 07:39:15',NULL,NULL),(56,1,'core_group.aclId','2022-06-07 07:39:15',1,5),(57,2,'ta_tasklists.acl_id','2022-06-07 07:39:15',37,1),(58,1,'core_entity.defaultAclId','2022-06-07 07:39:15',NULL,NULL),(59,2,'cal_calendars.acl_id','2022-06-07 07:39:16',30,2),(60,2,'em_accounts.acl_id','2022-06-07 07:39:16',38,1),(61,1,'core_entity.defaultAclId','2022-06-07 07:39:16',NULL,NULL),(62,2,'addressbook_addressbook.aclId','2022-06-07 07:39:16',21,3),(63,2,'notes_note_book.aclId','2022-06-07 07:39:16',25,66),(64,2,'fs_folders.acl_id','2022-06-07 07:44:10',33,15);
+INSERT INTO `core_acl` VALUES (1,1,'core_group.aclId','2020-07-25 10:50:42',1,1),(2,1,'core_group.aclId','2020-07-25 10:50:42',1,2),(3,1,'core_group.aclId','2020-07-25 10:50:43',1,3),(4,1,'core_group.aclId','2020-07-25 10:50:43',1,4),(5,1,'core_module.aclId','2020-07-25 10:50:43',13,1),(6,1,'core_entity.defaultAclId','2020-07-25 10:50:43',NULL,NULL),(7,1,'core_entity.defaultAclId','2020-07-25 10:50:43',NULL,NULL),(8,1,'go_templates.acl_id','2020-07-25 10:50:43',20,1),(9,1,'core_module.aclId','2020-07-25 10:50:44',13,2),(10,1,'addressbook_addressbook.aclId','2020-07-25 10:50:44',21,1),(11,1,'core_module.aclId','2020-07-25 10:50:44',13,3),(12,1,'notes_note_book.aclId','2020-07-25 10:50:44',25,65),(13,1,'core_module.aclId','2020-07-25 10:50:44',13,4),(14,1,'core_module.aclId','2020-07-25 10:50:45',13,5),(15,1,'core_module.aclId','2020-07-25 10:50:45',13,6),(16,1,'core_module.aclId','2020-07-25 10:50:45',13,7),(17,1,'core_entity.defaultAclId','2020-07-25 10:50:46',NULL,NULL),(18,1,'core_module.aclId','2020-07-25 10:50:46',13,8),(20,1,'core_module.aclId','2020-07-25 10:50:46',13,10),(21,1,'core_module.aclId','2020-07-25 10:50:46',13,11),(22,1,'fs_templates.acl_id','2020-07-25 10:50:46',20,1),(23,1,'fs_templates.acl_id','2020-07-25 10:50:46',20,2),(24,1,'core_module.aclId','2020-07-25 10:50:47',13,12),(25,1,'core_module.aclId','2020-07-25 10:50:47',13,13),(26,1,'core_module.aclId','2020-07-25 10:50:47',13,14),(27,1,'core_module.aclId','2020-07-25 10:50:47',13,15),(28,1,'core_module.aclId','2020-07-25 10:50:47',13,16),(29,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(30,1,'addressbook_addressbook.aclId','2020-07-25 11:09:13',21,2),(31,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(32,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(33,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(34,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(35,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(36,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(37,1,'core_entity.defaultAclId','2020-07-25 11:09:13',NULL,NULL),(38,1,'cal_calendars.acl_id','2020-07-25 11:09:14',30,1),(39,1,'fs_folders.acl_id','2020-07-25 11:09:20',33,4),(40,1,'core_module.aclId','2020-07-25 11:12:26',13,17),(41,1,'core_module.aclId','2020-07-25 11:12:26',13,18),(42,1,'core_module.aclId','2020-07-25 11:12:32',13,19),(43,1,'core_module.aclId','2020-07-25 11:12:35',13,20),(44,1,'core_module.aclId','2020-07-25 11:12:39',13,21),(45,1,'core_module.aclId','2020-07-25 11:12:54',13,22),(46,1,'core_module.aclId','2020-07-25 11:12:58',13,23),(47,1,'core_module.aclId','2020-07-25 11:13:10',13,24),(48,1,'core_module.aclId','2020-07-25 11:13:15',13,25),(49,1,'core_module.aclId','2020-07-25 11:13:24',13,26),(50,1,'fs_folders.acl_id','2020-07-25 11:14:12',NULL,NULL),(51,1,'fs_folders.acl_id','2020-07-25 11:14:12',33,5);
 /*!40000 ALTER TABLE `core_acl` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1143,7 +1104,7 @@ CREATE TABLE `core_acl_group` (
 
 LOCK TABLES `core_acl_group` WRITE;
 /*!40000 ALTER TABLE `core_acl_group` DISABLE KEYS */;
-INSERT INTO `core_acl_group` VALUES (2,2,10),(3,3,10),(4,4,10),(5,2,10),(7,2,10),(8,3,10),(9,3,10),(11,3,10),(13,2,10),(13,3,10),(14,3,10),(15,3,10),(16,3,10),(20,3,10),(21,3,10),(22,3,10),(23,3,10),(24,3,10),(25,3,10),(26,3,10),(27,3,10),(30,3,10),(40,3,10),(41,3,10),(42,3,10),(45,3,10),(47,3,10),(48,3,10),(49,3,10),(50,2,10),(53,3,10),(54,2,10),(56,2,10),(56,5,10),(17,3,30),(59,3,30),(10,3,40),(12,3,40),(57,5,50),(59,5,50),(60,5,50),(62,5,50),(63,5,50),(64,5,50);
+INSERT INTO `core_acl_group` VALUES (2,2,10),(3,3,10),(4,4,10),(5,2,10),(6,2,10),(7,2,10),(8,3,10),(9,3,10),(11,3,10),(13,3,10),(14,3,10),(15,3,10),(16,3,10),(20,3,10),(21,3,10),(22,3,10),(23,3,10),(24,3,10),(25,3,10),(26,3,10),(27,3,10),(30,3,10),(40,3,10),(41,3,10),(42,3,10),(45,3,10),(47,3,10),(48,3,10),(49,3,10),(50,2,10),(17,3,30),(10,3,40),(12,3,40),(1,1,50),(2,1,50),(3,1,50),(4,1,50),(5,1,50),(6,1,50),(7,1,50),(8,1,50),(9,1,50),(10,1,50),(11,1,50),(12,1,50),(13,1,50),(14,1,50),(15,1,50),(16,1,50),(17,1,50),(18,1,50),(20,1,50),(21,1,50),(22,1,50),(23,1,50),(24,1,50),(25,1,50),(26,1,50),(27,1,50),(28,1,50),(29,1,50),(30,1,50),(31,1,50),(32,1,50),(33,1,50),(34,1,50),(35,1,50),(36,1,50),(37,1,50),(38,1,50),(39,1,50),(40,1,50),(41,1,50),(42,1,50),(43,1,50),(44,1,50),(45,1,50),(46,1,50),(47,1,50),(48,1,50),(49,1,50),(50,1,50),(51,1,50);
 /*!40000 ALTER TABLE `core_acl_group` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1165,7 +1126,7 @@ CREATE TABLE `core_acl_group_changes` (
   KEY `group` (`groupId`),
   CONSTRAINT `all` FOREIGN KEY (`aclId`) REFERENCES `core_acl` (`id`) ON DELETE CASCADE,
   CONSTRAINT `group` FOREIGN KEY (`groupId`) REFERENCES `core_group` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=200 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1174,43 +1135,8 @@ CREATE TABLE `core_acl_group_changes` (
 
 LOCK TABLES `core_acl_group_changes` WRITE;
 /*!40000 ALTER TABLE `core_acl_group_changes` DISABLE KEYS */;
-INSERT INTO `core_acl_group_changes` VALUES (136,2,2,0,NULL),(137,3,3,0,NULL),(138,4,4,0,NULL),(139,5,2,0,NULL),(140,7,2,0,NULL),(141,8,3,0,NULL),(142,9,3,0,NULL),(143,11,3,0,NULL),(144,13,2,0,NULL),(145,13,3,0,NULL),(146,14,3,0,NULL),(147,15,3,0,NULL),(148,16,3,0,NULL),(149,20,3,0,NULL),(150,21,3,0,NULL),(151,22,3,0,NULL),(152,23,3,0,NULL),(153,24,3,0,NULL),(154,25,3,0,NULL),(155,26,3,0,NULL),(156,27,3,0,NULL),(157,30,3,0,NULL),(158,40,3,0,NULL),(159,41,3,0,NULL),(160,42,3,0,NULL),(161,45,3,0,NULL),(162,47,3,0,NULL),(163,48,3,0,NULL),(164,49,3,0,NULL),(165,50,2,0,NULL),(166,53,3,0,NULL),(167,54,2,0,NULL),(168,56,2,0,NULL),(169,56,5,0,NULL),(170,17,3,0,NULL),(171,59,3,0,NULL),(172,10,3,0,NULL),(173,12,3,0,NULL),(174,57,5,0,NULL),(175,59,5,0,NULL),(176,60,5,0,NULL),(177,62,5,0,NULL),(178,63,5,0,NULL),(199,64,5,1,NULL);
+INSERT INTO `core_acl_group_changes` VALUES (1,8,1,1,NULL),(2,8,3,1,NULL),(3,16,1,2,NULL),(4,16,3,2,NULL),(5,17,1,2,NULL),(6,17,3,2,NULL),(7,18,1,2,NULL),(10,20,1,2,NULL),(11,20,3,2,NULL),(12,21,1,2,NULL),(13,21,3,2,NULL),(14,22,1,2,NULL),(15,22,3,2,NULL),(16,23,1,2,NULL),(17,23,3,2,NULL),(18,24,1,2,NULL),(19,24,3,2,NULL),(20,25,1,2,NULL),(21,25,3,2,NULL),(22,26,1,2,NULL),(23,26,3,2,NULL),(24,27,1,2,NULL),(25,27,3,2,NULL),(26,28,1,2,NULL),(27,29,1,3,NULL),(28,30,1,3,NULL),(29,30,3,3,NULL),(30,31,1,4,NULL),(31,32,1,4,NULL),(32,33,1,4,NULL),(33,34,1,4,NULL),(34,35,1,4,NULL),(35,36,1,4,NULL),(36,37,1,4,NULL),(37,38,1,5,NULL),(38,39,1,7,NULL),(39,40,1,8,NULL),(40,40,3,8,NULL),(41,41,1,8,NULL),(42,41,3,8,NULL),(43,42,1,9,NULL),(44,42,3,9,NULL),(45,43,1,10,NULL),(46,44,1,11,NULL),(47,45,1,12,NULL),(48,45,3,12,NULL),(49,46,1,13,NULL),(50,47,1,14,NULL),(51,47,3,14,NULL),(52,48,1,15,NULL),(53,48,3,15,NULL),(54,49,1,16,NULL),(55,49,3,16,NULL),(56,50,2,17,NULL),(57,50,1,17,NULL),(58,51,1,17,NULL);
 /*!40000 ALTER TABLE `core_acl_group_changes` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `core_alert`
---
-
-DROP TABLE IF EXISTS `core_alert`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `core_alert` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `entityTypeId` int(11) NOT NULL,
-  `entityId` int(11) NOT NULL,
-  `userId` int(11) NOT NULL,
-  `triggerAt` datetime NOT NULL,
-  `tag` varchar(50) DEFAULT NULL,
-  `recurrenceId` varchar(32) DEFAULT NULL,
-  `data` text DEFAULT NULL,
-  `sendMail` tinyint(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `core_alert_entityTypeId_entityId_tag_userId_uindex` (`entityTypeId`,`entityId`,`tag`,`userId`),
-  KEY `dk_alert_entityType_idx` (`entityTypeId`),
-  KEY `fk_alert_user_idx` (`userId`),
-  CONSTRAINT `fk_alert_entityType` FOREIGN KEY (`entityTypeId`) REFERENCES `core_entity` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
-  CONSTRAINT `fk_alert_user` FOREIGN KEY (`userId`) REFERENCES `core_user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `core_alert`
---
-
-LOCK TABLES `core_alert` WRITE;
-/*!40000 ALTER TABLE `core_alert` DISABLE KEYS */;
-/*!40000 ALTER TABLE `core_alert` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1288,41 +1214,8 @@ CREATE TABLE `core_auth_password` (
 
 LOCK TABLES `core_auth_password` WRITE;
 /*!40000 ALTER TABLE `core_auth_password` DISABLE KEYS */;
-INSERT INTO `core_auth_password` VALUES (1,'$2y$10$poqRxVLWH6qwxBEF/zeb4ewjogyPzVIm5U8n.LCbdCzNFx7WtsEWq');
+INSERT INTO `core_auth_password` VALUES (1,'$2y$10$8eZyIjI7rcMJ.RDUXqg5weU0mj6tWTGGn3C9vveGrBkGlL/VLH8ta');
 /*!40000 ALTER TABLE `core_auth_password` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `core_auth_remember_me`
---
-
-DROP TABLE IF EXISTS `core_auth_remember_me`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `core_auth_remember_me` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `token` varchar(190) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
-  `series` varchar(190) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
-  `userId` int(11) NOT NULL,
-  `expiresAt` datetime DEFAULT NULL,
-  `remoteIpAddress` varchar(100) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
-  `userAgent` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `platform` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `browser` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `core_auth_remember_me_series_index` (`series`),
-  KEY `core_auth_remember_me_core_user_id_fk` (`userId`),
-  CONSTRAINT `core_auth_remember_me_core_user_id_fk` FOREIGN KEY (`userId`) REFERENCES `core_user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `core_auth_remember_me`
---
-
-LOCK TABLES `core_auth_remember_me` WRITE;
-/*!40000 ALTER TABLE `core_auth_remember_me` DISABLE KEYS */;
-/*!40000 ALTER TABLE `core_auth_remember_me` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1340,10 +1233,8 @@ CREATE TABLE `core_auth_token` (
   `expiresAt` datetime DEFAULT NULL,
   `lastActiveAt` datetime NOT NULL,
   `remoteIpAddress` varchar(100) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
-  `userAgent` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `platform` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `browser` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `passedAuthenticators` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `userAgent` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `passedMethods` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`loginToken`),
   KEY `userId` (`userId`),
   KEY `accessToken` (`accessToken`)
@@ -1356,6 +1247,7 @@ CREATE TABLE `core_auth_token` (
 
 LOCK TABLES `core_auth_token` WRITE;
 /*!40000 ALTER TABLE `core_auth_token` DISABLE KEYS */;
+INSERT INTO `core_auth_token` VALUES ('5f1c12d8e3edf70a73fca60f7fb1d3394077e48bd763d','5f1c12d90bdb6f0e9cbb5cd3c91dbdeeeccfa693e3c80',1,'2020-07-25 11:09:12','2020-08-01 11:09:13','2020-07-25 11:09:12','43.242.229.111','Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36','password');
 /*!40000 ALTER TABLE `core_auth_token` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1407,10 +1299,9 @@ CREATE TABLE `core_change` (
   KEY `aclId` (`aclId`),
   KEY `entityTypeId` (`entityTypeId`),
   KEY `entityId` (`entityId`),
-  KEY `core_change_modSeq_entityTypeId_entityId_index` (`modSeq`,`entityTypeId`,`entityId`),
   CONSTRAINT `core_change_ibfk_1` FOREIGN KEY (`entityTypeId`) REFERENCES `core_entity` (`id`) ON DELETE CASCADE,
   CONSTRAINT `core_change_ibfk_2` FOREIGN KEY (`aclId`) REFERENCES `core_acl` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1419,7 +1310,7 @@ CREATE TABLE `core_change` (
 
 LOCK TABLES `core_change` WRITE;
 /*!40000 ALTER TABLE `core_change` DISABLE KEYS */;
-INSERT INTO `core_change` VALUES (21,2,6,1,NULL,'2022-06-07 09:44:02',0),(22,3,16,1,21,'2022-06-07 13:14:10',0),(23,15,16,1,64,'2022-06-07 13:14:10',0);
+INSERT INTO `core_change` VALUES (1,1,19,1,5,'2020-07-25 11:09:13',0),(2,2,21,1,30,'2020-07-25 11:09:13',0),(3,1,19,2,5,'2020-07-25 11:09:13',0),(4,1,16,1,38,'2020-07-25 11:09:14',0),(5,2,16,1,38,'2020-07-25 11:09:14',0),(6,3,16,2,21,'2020-07-25 13:09:20',0),(7,4,16,2,21,'2020-07-25 13:09:20',0),(8,4,16,2,39,'2020-07-25 13:09:20',0),(9,5,16,2,21,'2020-07-25 13:09:20',0),(10,1,13,1,5,'2020-07-25 11:11:47',0),(11,20,13,2,43,'2020-07-25 11:12:35',0),(12,23,13,3,46,'2020-07-25 11:12:58',0),(13,6,16,3,50,'2020-07-25 13:14:27',0),(14,1,16,4,38,'2020-07-25 13:14:33',0),(15,2,16,4,38,'2020-07-25 13:14:33',0),(16,3,16,4,21,'2020-07-25 13:14:33',0),(17,4,16,4,39,'2020-07-25 13:14:33',0),(18,5,16,4,51,'2020-07-25 13:14:33',0),(19,6,16,4,50,'2020-07-25 13:14:33',0),(20,7,16,5,21,'2020-07-25 13:14:44',0),(21,8,16,5,21,'2020-07-25 13:14:44',0),(22,9,16,5,21,'2020-07-25 13:14:44',0),(23,1,13,4,5,'2020-07-25 11:15:47',0),(24,10,16,6,21,'2020-07-25 11:15:51',0),(25,11,16,6,21,'2020-07-25 11:15:51',0),(26,1,13,5,5,'2020-07-25 11:16:57',0),(27,3,35,1,46,'2020-07-25 11:18:54',0);
 /*!40000 ALTER TABLE `core_change` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1437,7 +1328,6 @@ CREATE TABLE `core_change_user` (
   `modSeq` int(11) NOT NULL,
   PRIMARY KEY (`userId`,`entityId`,`entityTypeId`),
   KEY `entityTypeId` (`entityTypeId`),
-  KEY `core_change_user_modSeq_userId_entityTypeId_entityId_index` (`modSeq`,`userId`,`entityTypeId`,`entityId`),
   CONSTRAINT `core_change_user_ibfk_1` FOREIGN KEY (`entityTypeId`) REFERENCES `core_entity` (`id`) ON DELETE CASCADE,
   CONSTRAINT `core_change_user_ibfk_2` FOREIGN KEY (`userId`) REFERENCES `core_user` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1502,7 +1392,7 @@ CREATE TABLE `core_cron_job` (
   UNIQUE KEY `description` (`description`),
   KEY `moduleId` (`moduleId`),
   CONSTRAINT `core_cron_job_ibfk_1` FOREIGN KEY (`moduleId`) REFERENCES `core_module` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1511,7 +1401,7 @@ CREATE TABLE `core_cron_job` (
 
 LOCK TABLES `core_cron_job` WRITE;
 /*!40000 ALTER TABLE `core_cron_job` DISABLE KEYS */;
-INSERT INTO `core_cron_job` VALUES (1,1,'Garbage collection','GarbageCollection','0 0 * * *',1,'2022-06-08 00:00:00','2022-06-07 00:00:01',NULL,NULL),(2,1,'BuildSearchCache','BuildSearchCache','* * * * *',0,NULL,'2022-06-07 13:14:02',NULL,NULL);
+INSERT INTO `core_cron_job` VALUES (1,1,'Garbage collection','GarbageCollection','0 * * * *',1,'2020-07-25 11:00:00',NULL,NULL,NULL);
 /*!40000 ALTER TABLE `core_cron_job` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1534,7 +1424,7 @@ CREATE TABLE `core_customfields_field` (
   `type` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Text',
   `sortOrder` int(11) NOT NULL DEFAULT 0,
   `required` tinyint(1) NOT NULL DEFAULT 0,
-  `relatedFieldCondition` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `relatedFieldCondition` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `conditionallyHidden` tinyint(1) NOT NULL DEFAULT 0,
   `conditionallyRequired` tinyint(1) NOT NULL DEFAULT 0,
   `hint` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -1581,7 +1471,6 @@ CREATE TABLE `core_customfields_field_set` (
   `sortOrder` tinyint(4) NOT NULL DEFAULT 0,
   `filter` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `isTab` tinyint(1) NOT NULL DEFAULT 0,
-  `columns` tinyint(4) NOT NULL DEFAULT 2,
   PRIMARY KEY (`id`),
   KEY `entityId` (`entityId`),
   KEY `aclId` (`aclId`),
@@ -1612,12 +1501,11 @@ CREATE TABLE `core_customfields_select_option` (
   `fieldId` int(11) NOT NULL,
   `parentId` int(11) DEFAULT NULL,
   `text` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sortOrder` int(11) unsigned DEFAULT 0,
-  `enabled` tinyint(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   KEY `field_id` (`fieldId`),
   KEY `parentId` (`parentId`),
   CONSTRAINT `core_customfields_select_option_ibfk_1` FOREIGN KEY (`fieldId`) REFERENCES `core_customfields_field` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `core_customfields_select_option_ibfk_2` FOREIGN KEY (`fieldId`) REFERENCES `core_customfields_field` (`id`) ON DELETE CASCADE,
   CONSTRAINT `core_customfields_select_option_ibfk_3` FOREIGN KEY (`parentId`) REFERENCES `core_customfields_select_option` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -1642,8 +1530,6 @@ CREATE TABLE `core_email_template` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `moduleId` int(11) NOT NULL,
   `aclId` int(11) NOT NULL,
-  `key` varchar(20) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
-  `language` varchar(20) CHARACTER SET ascii COLLATE ascii_bin NOT NULL DEFAULT 'en',
   `name` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
   `subject` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `body` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1653,7 +1539,7 @@ CREATE TABLE `core_email_template` (
   KEY `moduleId` (`moduleId`),
   CONSTRAINT `core_email_template_ibfk_1` FOREIGN KEY (`aclId`) REFERENCES `core_acl` (`id`),
   CONSTRAINT `core_email_template_ibfk_2` FOREIGN KEY (`moduleId`) REFERENCES `core_module` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=COMPACT;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1684,7 +1570,7 @@ CREATE TABLE `core_email_template_attachment` (
   KEY `blobId` (`blobId`),
   CONSTRAINT `core_email_template_attachment_ibfk_1` FOREIGN KEY (`blobId`) REFERENCES `core_blob` (`id`),
   CONSTRAINT `core_email_template_attachment_ibfk_2` FOREIGN KEY (`emailTemplateId`) REFERENCES `core_email_template` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=COMPACT;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1717,7 +1603,7 @@ CREATE TABLE `core_entity` (
   KEY `defaultAclId` (`defaultAclId`),
   CONSTRAINT `core_entity_ibfk_1` FOREIGN KEY (`moduleId`) REFERENCES `core_module` (`id`) ON DELETE CASCADE,
   CONSTRAINT `core_entity_ibfk_2` FOREIGN KEY (`defaultAclId`) REFERENCES `core_acl` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1726,7 +1612,7 @@ CREATE TABLE `core_entity` (
 
 LOCK TABLES `core_entity` WRITE;
 /*!40000 ALTER TABLE `core_entity` DISABLE KEYS */;
-INSERT INTO `core_entity` VALUES (1,1,'Group','Group',0,6),(2,1,'Method','Method',0,NULL),(3,1,'Blob','Blob',0,NULL),(4,1,'Acl','Acl',1,NULL),(5,1,'AuthAllowGroup','AuthAllowGroup',0,NULL),(6,1,'CronJobSchedule','CronJobSchedule',1,NULL),(7,1,'EmailTemplate','EmailTemplate',0,31),(8,1,'EntityFilter','EntityFilter',0,32),(9,1,'Field','Field',0,NULL),(10,1,'FieldSet','FieldSet',0,7),(11,1,'Link','Link',0,NULL),(12,1,'Log','Log',0,NULL),(13,1,'Module','Module',0,33),(14,1,'OauthAccessToken','OauthAccessToken',0,NULL),(15,1,'OauthClient','OauthClient',0,NULL),(16,1,'Search','Search',1,NULL),(17,1,'SmtpAccount','SmtpAccount',0,34),(18,1,'Token','Token',0,NULL),(19,1,'User','User',0,NULL),(20,1,'Template','Template',0,35),(21,2,'AddressBook','AddressBook',0,29),(22,2,'Contact','Contact',0,NULL),(23,2,'Group','AddressBookGroup',0,NULL),(24,3,'Note','Note',0,NULL),(25,3,'NoteBook','NoteBook',0,36),(26,5,'Comment','Comment',0,NULL),(27,5,'Label','CommentLabel',0,NULL),(28,6,'Bookmark','Bookmark',0,NULL),(29,6,'Category','BookmarksCategory',0,37),(30,7,'Calendar','Calendar',0,17),(31,7,'Event','Event',0,NULL),(32,11,'File','File',0,NULL),(33,11,'Folder','Folder',0,NULL),(34,15,'Task','Task',0,NULL),(35,23,'Server','ImapAuthServer',0,NULL),(36,1,'SpreadSheetExport','SpreadSheetExport',0,NULL),(37,15,'Tasklist','Tasklist',0,58),(38,10,'Account','Account',0,61),(39,1,'Alert','Alert',0,NULL),(40,1,'PdfTemplate','PdfTemplate',0,NULL),(41,1,'UserDisplay','UserDisplay',0,NULL),(42,15,'Category','TaskCategory',0,NULL);
+INSERT INTO `core_entity` VALUES (1,1,'Group','Group',0,6),(2,1,'Method','Method',0,NULL),(3,1,'Blob','Blob',0,NULL),(4,1,'Acl','Acl',17,NULL),(5,1,'AuthAllowGroup','AuthAllowGroup',0,NULL),(6,1,'CronJobSchedule','CronJobSchedule',0,NULL),(7,1,'EmailTemplate','EmailTemplate',0,31),(8,1,'EntityFilter','EntityFilter',0,32),(9,1,'Field','Field',0,NULL),(10,1,'FieldSet','FieldSet',0,7),(11,1,'Link','Link',0,NULL),(12,1,'Log','Log',0,NULL),(13,1,'Module','Module',5,33),(14,1,'OauthAccessToken','OauthAccessToken',0,NULL),(15,1,'OauthClient','OauthClient',0,NULL),(16,1,'Search','Search',6,NULL),(17,1,'SmtpAccount','SmtpAccount',0,34),(18,1,'Token','Token',0,NULL),(19,1,'User','User',2,NULL),(20,1,'Template','Template',0,35),(21,2,'AddressBook','AddressBook',1,29),(22,2,'Contact','Contact',0,NULL),(23,2,'Group','AddressBookGroup',0,NULL),(24,3,'Note','Note',0,NULL),(25,3,'NoteBook','NoteBook',0,36),(26,5,'Comment','Comment',0,NULL),(27,5,'Label','CommentLabel',0,NULL),(28,6,'Bookmark','Bookmark',0,NULL),(29,6,'Category','BookmarksCategory',0,37),(30,7,'Calendar','Calendar',0,17),(31,7,'Event','Event',0,NULL),(32,11,'File','File',0,NULL),(33,11,'Folder','Folder',0,NULL),(34,15,'Task','Task',0,NULL),(35,23,'Server','ImapAuthServer',1,NULL);
 /*!40000 ALTER TABLE `core_entity` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1782,7 +1668,7 @@ CREATE TABLE `core_group` (
   KEY `aclId` (`aclId`),
   CONSTRAINT `core_group_ibfk_1` FOREIGN KEY (`aclId`) REFERENCES `core_acl` (`id`),
   CONSTRAINT `core_group_ibfk_2` FOREIGN KEY (`isUserGroupFor`) REFERENCES `core_user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1791,7 +1677,7 @@ CREATE TABLE `core_group` (
 
 LOCK TABLES `core_group` WRITE;
 /*!40000 ALTER TABLE `core_group` DISABLE KEYS */;
-INSERT INTO `core_group` VALUES (1,'Admins',1,1,NULL),(2,'Everyone',1,2,NULL),(3,'Internal',1,3,NULL),(4,'groupofficeadmin',1,4,1),(5,'postmaster@apps.technoinfotech.com',1,56,2);
+INSERT INTO `core_group` VALUES (1,'Admins',1,1,NULL),(2,'Everyone',1,2,NULL),(3,'Internal',1,3,NULL),(4,'groupofficeadmin',1,4,1);
 /*!40000 ALTER TABLE `core_group` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1872,13 +1758,16 @@ CREATE TABLE `core_module` (
   `version` int(11) NOT NULL,
   `sort_order` int(11) NOT NULL DEFAULT 0,
   `admin_menu` tinyint(1) NOT NULL DEFAULT 0,
+  `aclId` int(11) NOT NULL,
   `enabled` tinyint(1) NOT NULL DEFAULT 1,
   `modifiedAt` datetime DEFAULT NULL,
   `modSeq` int(11) DEFAULT NULL,
   `deletedAt` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  UNIQUE KEY `name` (`name`),
+  KEY `aclId` (`aclId`),
+  CONSTRAINT `acl` FOREIGN KEY (`aclId`) REFERENCES `core_acl` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1887,7 +1776,7 @@ CREATE TABLE `core_module` (
 
 LOCK TABLES `core_module` WRITE;
 /*!40000 ALTER TABLE `core_module` DISABLE KEYS */;
-INSERT INTO `core_module` VALUES (1,'core','core',289,0,0,1,NULL,NULL,NULL),(2,'addressbook','community',72,101,0,1,NULL,NULL,NULL),(3,'notes','community',59,102,0,1,NULL,NULL,NULL),(4,'googleauthenticator','community',3,103,0,1,NULL,NULL,NULL),(5,'comments','community',33,104,0,1,NULL,NULL,NULL),(6,'bookmarks','community',11,105,0,1,NULL,NULL,NULL),(7,'calendar',NULL,184,106,0,1,'2020-07-25 10:50:45',NULL,NULL),(10,'email',NULL,116,106,0,1,'2020-07-25 10:50:46',NULL,NULL),(11,'files',NULL,141,106,0,1,'2020-07-25 10:50:46',NULL,NULL),(12,'sieve',NULL,0,106,0,1,'2020-07-25 10:50:46',NULL,NULL),(13,'summary',NULL,31,106,0,1,'2020-07-25 10:50:47',NULL,NULL),(14,'sync',NULL,59,106,0,1,'2020-07-25 10:50:47',NULL,NULL),(15,'tasks','community',31,106,0,1,'2020-07-25 10:50:47',NULL,NULL),(17,'dav',NULL,1,106,0,1,'2020-07-25 11:12:42',NULL,NULL),(18,'caldav',NULL,32,106,0,1,'2020-07-25 11:12:26',NULL,NULL),(19,'calendarexport',NULL,0,106,0,1,'2020-07-25 11:12:32',NULL,NULL),(20,'carddav','community',0,106,0,1,NULL,NULL,NULL),(21,'customcss',NULL,0,107,1,1,'2020-07-25 11:12:39',NULL,NULL),(22,'freebusypermissions',NULL,6,107,0,1,'2020-07-25 11:12:54',NULL,NULL),(23,'imapauthenticator','community',1,107,0,1,NULL,NULL,NULL),(24,'reminders',NULL,0,108,0,1,'2020-07-25 11:13:10',NULL,NULL),(25,'smime',NULL,16,108,0,1,'2020-07-25 11:13:15',NULL,NULL),(26,'zpushadmin',NULL,7,108,0,1,'2020-07-25 11:13:24',NULL,NULL),(27,'jitsimeet',NULL,0,108,0,1,'2022-06-07 07:36:54',NULL,NULL);
+INSERT INTO `core_module` VALUES (1,'core','core',176,0,0,5,1,NULL,NULL,NULL),(2,'addressbook','community',53,101,0,9,1,NULL,NULL,NULL),(3,'notes','community',46,102,0,11,1,NULL,NULL,NULL),(4,'googleauthenticator','community',0,103,0,13,1,NULL,NULL,NULL),(5,'comments','community',24,104,0,14,1,NULL,NULL,NULL),(6,'bookmarks','community',8,105,0,15,1,NULL,NULL,NULL),(7,'calendar',NULL,184,106,0,16,1,'2020-07-25 10:50:45',NULL,NULL),(8,'cron',NULL,0,106,1,18,1,'2020-07-25 10:50:46',NULL,NULL),(10,'email',NULL,104,106,0,20,1,'2020-07-25 10:50:46',NULL,NULL),(11,'files',NULL,125,106,0,21,1,'2020-07-25 10:50:46',NULL,NULL),(12,'sieve',NULL,0,106,0,24,1,'2020-07-25 10:50:46',NULL,NULL),(13,'summary',NULL,17,106,0,25,1,'2020-07-25 10:50:47',NULL,NULL),(14,'sync',NULL,49,106,0,26,1,'2020-07-25 10:50:47',NULL,NULL),(15,'tasks',NULL,60,106,0,27,1,'2020-07-25 10:50:47',NULL,NULL),(16,'tools',NULL,0,106,1,28,1,'2020-07-25 10:50:47',NULL,NULL),(17,'dav',NULL,1,106,0,40,1,'2020-07-25 11:12:42',NULL,NULL),(18,'caldav',NULL,32,106,0,41,1,'2020-07-25 11:12:26',NULL,NULL),(19,'calendarexport',NULL,0,106,0,42,1,'2020-07-25 11:12:32',NULL,NULL),(20,'carddav','community',0,106,0,43,1,NULL,NULL,NULL),(21,'customcss',NULL,0,107,1,44,1,'2020-07-25 11:12:39',NULL,NULL),(22,'freebusypermissions',NULL,4,107,0,45,1,'2020-07-25 11:12:54',NULL,NULL),(23,'imapauthenticator','community',1,107,0,46,1,NULL,NULL,NULL),(24,'reminders',NULL,0,108,0,47,1,'2020-07-25 11:13:10',NULL,NULL),(25,'smime',NULL,6,108,0,48,1,'2020-07-25 11:13:15',NULL,NULL),(26,'zpushadmin',NULL,7,108,0,49,1,'2020-07-25 11:13:24',NULL,NULL);
 /*!40000 ALTER TABLE `core_module` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1921,33 +1810,6 @@ LOCK TABLES `core_oauth_access_token` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `core_oauth_auth_codes`
---
-
-DROP TABLE IF EXISTS `core_oauth_auth_codes`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `core_oauth_auth_codes` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `clientId` int(11) NOT NULL,
-  `identifier` varchar(128) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
-  `userIdentifier` int(11) NOT NULL,
-  `expiryDateTime` datetime NOT NULL,
-  `nonce` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `core_oauth_auth_codes`
---
-
-LOCK TABLES `core_oauth_auth_codes` WRITE;
-/*!40000 ALTER TABLE `core_oauth_auth_codes` DISABLE KEYS */;
-/*!40000 ALTER TABLE `core_oauth_auth_codes` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `core_oauth_client`
 --
 
@@ -1975,104 +1837,6 @@ LOCK TABLES `core_oauth_client` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `core_pdf_block`
---
-
-DROP TABLE IF EXISTS `core_pdf_block`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `core_pdf_block` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `pdfTemplateId` bigint(20) unsigned NOT NULL,
-  `x` int(11) DEFAULT NULL,
-  `y` int(11) DEFAULT NULL,
-  `width` int(11) DEFAULT NULL,
-  `height` int(11) DEFAULT NULL,
-  `align` enum('L','C','R','J') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'L',
-  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'text',
-  PRIMARY KEY (`id`) USING BTREE,
-  KEY `pdfTemplateId` (`pdfTemplateId`),
-  CONSTRAINT `core_pdf_block_ibfk_1` FOREIGN KEY (`pdfTemplateId`) REFERENCES `core_pdf_template` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `core_pdf_block`
---
-
-LOCK TABLES `core_pdf_block` WRITE;
-/*!40000 ALTER TABLE `core_pdf_block` DISABLE KEYS */;
-/*!40000 ALTER TABLE `core_pdf_block` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `core_pdf_template`
---
-
-DROP TABLE IF EXISTS `core_pdf_template`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `core_pdf_template` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `moduleId` int(11) NOT NULL,
-  `key` varchar(20) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
-  `language` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'en',
-  `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `stationaryBlobId` binary(40) DEFAULT NULL,
-  `landscape` tinyint(1) NOT NULL DEFAULT 0,
-  `pageSize` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'A4',
-  `measureUnit` enum('mm','pt','cm','in') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'mm',
-  `marginTop` decimal(19,4) NOT NULL DEFAULT 10.0000,
-  `marginRight` decimal(19,4) NOT NULL DEFAULT 10.0000,
-  `marginBottom` decimal(19,4) NOT NULL DEFAULT 10.0000,
-  `marginLeft` decimal(19,4) NOT NULL DEFAULT 10.0000,
-  PRIMARY KEY (`id`),
-  KEY `moduleId` (`moduleId`),
-  KEY `stationaryBlobId` (`stationaryBlobId`),
-  CONSTRAINT `core_pdf_template_ibfk_1` FOREIGN KEY (`moduleId`) REFERENCES `core_module` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `core_pdf_template_ibfk_2` FOREIGN KEY (`stationaryBlobId`) REFERENCES `core_blob` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `core_pdf_template`
---
-
-LOCK TABLES `core_pdf_template` WRITE;
-/*!40000 ALTER TABLE `core_pdf_template` DISABLE KEYS */;
-/*!40000 ALTER TABLE `core_pdf_template` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `core_permission`
---
-
-DROP TABLE IF EXISTS `core_permission`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `core_permission` (
-  `moduleId` int(11) NOT NULL,
-  `groupId` int(11) NOT NULL,
-  `rights` bigint(20) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`moduleId`,`groupId`),
-  KEY `fk_permission_group_idx` (`groupId`),
-  CONSTRAINT `fk_permission_group` FOREIGN KEY (`groupId`) REFERENCES `core_group` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION,
-  CONSTRAINT `fk_permission_module` FOREIGN KEY (`moduleId`) REFERENCES `core_module` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `core_permission`
---
-
-LOCK TABLES `core_permission` WRITE;
-/*!40000 ALTER TABLE `core_permission` DISABLE KEYS */;
-INSERT INTO `core_permission` VALUES (1,2,0),(2,3,0),(3,3,0),(4,2,0),(4,3,0),(5,3,0),(6,3,0),(7,3,0),(10,3,0),(11,3,2),(12,3,0),(13,3,0),(14,3,0),(15,3,0),(17,3,0),(18,3,0),(19,3,0),(22,3,0),(24,3,0),(25,3,0),(26,3,0),(27,3,0);
-/*!40000 ALTER TABLE `core_permission` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `core_search`
 --
 
@@ -2086,18 +1850,19 @@ CREATE TABLE `core_search` (
   `name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `description` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `entityTypeId` int(11) NOT NULL,
+  `keywords` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `filter` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `modifiedAt` datetime DEFAULT NULL,
   `aclId` int(11) NOT NULL,
-  `rebuild` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `entityId` (`entityId`,`entityTypeId`),
   KEY `acl_id` (`aclId`),
   KEY `moduleId` (`moduleId`),
-  KEY `core_search_entityTypeId_filter_modifiedAt_aclId_index` (`entityTypeId`,`filter`,`modifiedAt`,`aclId`),
-  CONSTRAINT `core_search_ibfk_1` FOREIGN KEY (`entityTypeId`) REFERENCES `core_entity` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `core_search_ibfk_2` FOREIGN KEY (`aclId`) REFERENCES `core_acl` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+  KEY `entityTypeId` (`entityTypeId`),
+  KEY `filter` (`filter`),
+  KEY `keywords` (`keywords`),
+  CONSTRAINT `core_search_ibfk_1` FOREIGN KEY (`entityTypeId`) REFERENCES `core_entity` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2106,34 +1871,8 @@ CREATE TABLE `core_search` (
 
 LOCK TABLES `core_search` WRITE;
 /*!40000 ALTER TABLE `core_search` DISABLE KEYS */;
-INSERT INTO `core_search` VALUES (1,1,11,'calendar','calendar',33,NULL,'2022-06-07 07:39:16',21,0),(2,2,11,'System Administrator','calendar/System Administrator',33,NULL,'2020-07-25 11:09:14',38,0),(3,3,11,'users','users',33,NULL,'2022-06-07 07:44:10',21,0),(4,4,11,'groupofficeadmin','users/groupofficeadmin',33,NULL,'2020-07-25 11:09:20',39,0),(5,5,11,'log','log',33,NULL,'2020-07-25 11:14:12',21,0),(6,6,11,'addressbook','addressbook',33,NULL,'2020-07-25 11:14:12',21,0),(7,7,11,'projects2','projects2',33,NULL,'2020-07-25 11:14:44',21,0),(8,8,11,'notes','notes',33,NULL,'2020-07-25 11:14:44',21,0),(9,9,11,'tickets','tickets',33,NULL,'2020-07-25 11:14:44',21,0),(10,10,11,'public','public',33,NULL,'2020-07-25 11:15:51',21,0),(11,11,11,'customcss','public/customcss',33,NULL,'2020-07-25 11:15:51',21,0),(12,12,11,'tasks','tasks',33,NULL,'2022-06-07 07:39:16',21,0),(13,13,11,'postmaster','tasks/postmaster',33,NULL,'2022-06-07 07:39:16',57,0),(14,14,11,'postmaster','calendar/postmaster',33,NULL,'2022-06-07 07:39:16',59,0),(15,15,11,'postmaster@apps.technoinfotech.com','users/postmaster@apps.technoinfotech.com',33,NULL,'2022-06-07 07:44:10',64,0);
+INSERT INTO `core_search` VALUES (1,1,11,'calendar','calendar',33,'Folder,calendar',NULL,'2020-07-25 11:09:14',38),(2,2,11,'System Administrator','calendar/System Administrator',33,'Folder,System Administrator,calendar/System Administrator',NULL,'2020-07-25 11:09:14',38),(3,3,11,'users','users',33,'Folder,users',NULL,'2020-07-25 11:09:20',21),(4,4,11,'groupofficeadmin','users/groupofficeadmin',33,'Folder,groupofficeadmin,users/groupofficeadmin',NULL,'2020-07-25 11:09:20',39),(5,5,11,'log','log',33,'Folder,log',NULL,'2020-07-25 11:14:12',51),(6,6,11,'addressbook','addressbook',33,'Folder,addressbook',NULL,'2020-07-25 11:14:12',50),(7,7,11,'projects2','projects2',33,'Folder,projects2',NULL,'2020-07-25 11:14:44',21),(8,8,11,'notes','notes',33,'Folder,notes',NULL,'2020-07-25 11:14:44',21),(9,9,11,'tickets','tickets',33,'Folder,tickets',NULL,'2020-07-25 11:14:44',21),(10,10,11,'public','public',33,'Folder,public',NULL,'2020-07-25 11:15:51',21),(11,11,11,'customcss','public/customcss',33,'Folder,customcss,public/customcss',NULL,'2020-07-25 11:15:51',21);
 /*!40000 ALTER TABLE `core_search` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `core_search_word`
---
-
-DROP TABLE IF EXISTS `core_search_word`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `core_search_word` (
-  `searchId` int(11) NOT NULL,
-  `word` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`word`,`searchId`),
-  KEY `searchId` (`searchId`),
-  CONSTRAINT `core_search_word_ibfk_1` FOREIGN KEY (`searchId`) REFERENCES `core_search` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `core_search_word`
---
-
-LOCK TABLES `core_search_word` WRITE;
-/*!40000 ALTER TABLE `core_search_word` DISABLE KEYS */;
-INSERT INTO `core_search_word` VALUES (1,'1'),(10,'10'),(11,'11'),(12,'12'),(13,'13'),(14,'14'),(15,'15'),(2,'2'),(3,'3'),(4,'4'),(5,'5'),(6,'6'),(7,'7'),(8,'8'),(9,'9'),(6,'addressbook'),(2,'administrator'),(15,'appstechnoinfotechcom'),(1,'calendar'),(14,'calendar/postmaster'),(2,'calendar/system'),(11,'customcss'),(1,'folder'),(2,'folder'),(3,'folder'),(4,'folder'),(5,'folder'),(6,'folder'),(7,'folder'),(8,'folder'),(9,'folder'),(10,'folder'),(11,'folder'),(12,'folder'),(13,'folder'),(14,'folder'),(15,'folder'),(4,'groupofficeadmin'),(5,'log'),(8,'notes'),(13,'postmaster'),(14,'postmaster'),(15,'postmaster@appstechnoinfotechcom'),(7,'projects2'),(10,'public'),(11,'public/customcss'),(2,'system'),(12,'tasks'),(13,'tasks/postmaster'),(9,'tickets'),(3,'users'),(4,'users/groupofficeadmin'),(15,'users/postmaster@appstechnoinfotechcom');
-/*!40000 ALTER TABLE `core_search_word` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -2158,7 +1897,7 @@ CREATE TABLE `core_setting` (
 
 LOCK TABLES `core_setting` WRITE;
 /*!40000 ALTER TABLE `core_setting` DISABLE KEYS */;
-INSERT INTO `core_setting` VALUES (1,'cacheClearedAt','1654587842'),(1,'corsAllowOrigin',''),(1,'databaseVersion','6.6.93'),(1,'defaultCurrency','Rs'),(1,'defaultDecimalSeparator','.'),(1,'defaultThousandSeparator',','),(1,'defaultTimezone','Asia/Calcutta'),(1,'demoDataAsked','1'),(1,'language','en'),(1,'locale','C.UTF-8'),(1,'primaryColor','0E3B83'),(1,'smtpEncryption',NULL),(1,'smtpPassword',NULL),(1,'smtpPort','25'),(1,'systemEmail','postmaster@vmi659954.contaboserver.net'),(1,'URL','https://apps.technoinfotech.com/groupoffice/'),(1,'userAddressBookId','2'),(1,'welcomeShown','1'),(2,'lastContactColorIndex','3');
+INSERT INTO `core_setting` VALUES (1,'cacheClearedAt','1595675604'),(1,'databaseVersion','6.4.159'),(1,'defaultCurrency','Rs'),(1,'defaultDecimalSeparator','.'),(1,'defaultThousandSeparator',','),(1,'defaultTimezone','Asia/Calcutta'),(1,'language','en'),(1,'locale','C.UTF-8'),(1,'primaryColor','0E3B83'),(1,'smtpEncryption',NULL),(1,'smtpPassword',NULL),(1,'smtpPort','25'),(1,'systemEmail','postmaster@powermail.mydomainname.com'),(1,'URL','https://powermail.mydomainname.com/groupoffice/'),(1,'userAddressBookId','2'),(2,'lastContactColorIndex','3');
 /*!40000 ALTER TABLE `core_setting` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2181,7 +1920,6 @@ CREATE TABLE `core_smtp_account` (
   `verifyCertificate` tinyint(1) NOT NULL DEFAULT 1,
   `fromName` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
   `fromEmail` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `maxMessagesPerMinute` smallint(5) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `moduleId` (`moduleId`),
   KEY `aclId` (`aclId`),
@@ -2200,37 +1938,6 @@ LOCK TABLES `core_smtp_account` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `core_spreadsheet_export`
---
-
-DROP TABLE IF EXISTS `core_spreadsheet_export`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `core_spreadsheet_export` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `userId` int(11) NOT NULL,
-  `entityTypeId` int(11) NOT NULL,
-  `name` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `columns` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `userId` (`userId`),
-  KEY `entityTypeId` (`entityTypeId`),
-  KEY `name` (`name`),
-  CONSTRAINT `core_spreadsheet_export_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `core_user` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `core_spreadsheet_export_ibfk_2` FOREIGN KEY (`entityTypeId`) REFERENCES `core_entity` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `core_spreadsheet_export`
---
-
-LOCK TABLES `core_spreadsheet_export` WRITE;
-/*!40000 ALTER TABLE `core_spreadsheet_export` DISABLE KEYS */;
-/*!40000 ALTER TABLE `core_spreadsheet_export` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `core_user`
 --
 
@@ -2239,7 +1946,7 @@ DROP TABLE IF EXISTS `core_user`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `core_user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `username` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `displayName` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
   `avatarId` binary(40) DEFAULT NULL,
   `enabled` tinyint(1) NOT NULL DEFAULT 1,
@@ -2276,18 +1983,18 @@ CREATE TABLE `core_user` (
   `disk_quota` bigint(20) DEFAULT NULL,
   `disk_usage` bigint(20) NOT NULL DEFAULT 0,
   `mail_reminders` tinyint(1) NOT NULL DEFAULT 0,
+  `popup_reminders` tinyint(1) NOT NULL DEFAULT 0,
+  `popup_emails` tinyint(1) NOT NULL DEFAULT 0,
   `holidayset` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `sort_email_addresses_by_time` tinyint(1) NOT NULL DEFAULT 0,
   `no_reminders` tinyint(1) NOT NULL DEFAULT 0,
   `last_password_change` int(11) NOT NULL DEFAULT 0,
   `force_password_change` tinyint(1) NOT NULL DEFAULT 0,
-  `homeDir` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `confirmOnMove` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   KEY `fk_user_avatar_id_idx` (`avatarId`),
   CONSTRAINT `fk_user_avatar_id` FOREIGN KEY (`avatarId`) REFERENCES `core_blob` (`id`) ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2296,7 +2003,7 @@ CREATE TABLE `core_user` (
 
 LOCK TABLES `core_user` WRITE;
 /*!40000 ALTER TABLE `core_user` DISABLE KEYS */;
-INSERT INTO `core_user` VALUES (1,'groupofficeadmin','System Administrator',NULL,1,'support@technoinfotech.com','support@technoinfotech.com',NULL,NULL,'2022-06-07 07:38:24','2020-07-25 10:50:43','2022-06-07 07:38:24','d-m-Y',1,'G:i','.',',','€',3,20,'Europe/Amsterdam','summary','en','Paper',1,'first_name',0,0,0,0,1,0,';','\"',0,NULL,0,0,NULL,0,0,0,0,'users/groupofficeadmin',0),(2,'postmaster@apps.technoinfotech.com','postmaster',NULL,1,'postmaster@apps.technoinfotech.com','postmaster@apps.technoinfotech.com',NULL,NULL,'2022-06-07 07:43:42','2022-06-07 07:39:15','2022-06-07 07:43:42','d-m-Y',1,'G:i',',','.','Rs',2,20,'Asia/Calcutta','summary','en','Paper',1,'first_name',0,0,0,0,1,0,';','\"',0,NULL,0,0,NULL,0,0,0,0,'users/postmaster@apps.technoinfotech.com',0);
+INSERT INTO `core_user` VALUES (1,'groupofficeadmin','System Administrator',NULL,1,'support@technoinfotech.com','support@technoinfotech.com',NULL,NULL,'2020-07-25 11:09:13','2020-07-25 10:50:43','2020-07-25 11:09:13','d-m-Y',1,'G:i','.',',','€',1,20,'Europe/Amsterdam','summary','en','Paper',1,'first_name',0,0,0,0,1,0,';','\"',0,NULL,0,0,0,0,NULL,0,0,0,0);
 /*!40000 ALTER TABLE `core_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2369,7 +2076,7 @@ CREATE TABLE `core_user_group` (
 
 LOCK TABLES `core_user_group` WRITE;
 /*!40000 ALTER TABLE `core_user_group` DISABLE KEYS */;
-INSERT INTO `core_user_group` VALUES (1,1),(2,1),(2,2),(3,2),(4,1),(5,2);
+INSERT INTO `core_user_group` VALUES (1,1),(2,1),(4,1);
 /*!40000 ALTER TABLE `core_user_group` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2494,6 +2201,7 @@ CREATE TABLE `em_accounts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL DEFAULT 0,
   `acl_id` int(11) NOT NULL DEFAULT 0,
+  `type` varchar(4) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `host` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `port` int(11) NOT NULL DEFAULT 0,
   `deprecated_use_ssl` tinyint(1) NOT NULL DEFAULT 0,
@@ -2521,12 +2229,9 @@ CREATE TABLE `em_accounts` (
   `do_not_mark_as_read` tinyint(1) NOT NULL DEFAULT 0,
   `signature_below_reply` tinyint(1) NOT NULL DEFAULT 0,
   `full_reply_headers` tinyint(1) NOT NULL DEFAULT 0,
-  `force_smtp_login` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
-  KEY `user_id` (`user_id`),
-  KEY `id` (`id`),
-  KEY `user_id_2` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2535,7 +2240,6 @@ CREATE TABLE `em_accounts` (
 
 LOCK TABLES `em_accounts` WRITE;
 /*!40000 ALTER TABLE `em_accounts` DISABLE KEYS */;
-INSERT INTO `em_accounts` VALUES (1,2,60,'127.0.0.1',143,0,0,'postmaster@apps.technoinfotech.com','{GOCRYPT2}def5020079b158bce4cf58ffb6a335e10fbb92b22a7ea55fcef72a530c25015a3ca9a02eba217f50d298edb5e9f6be88b430888d37f2b821172d7aa7c1041925b3083c17f7e78a55884489dc3036334f4741341e833abe96d5d67d50','',1,'','Sent','Drafts','Trash','Spam','127.0.0.1',587,'',1,'postmaster@apps.technoinfotech.com','{GOCRYPT2}def502009668e39290b593710658c7564839af20f656b96c9a142964f7739534ed28e5d012659226a03ff7548d740ad699a691297299f840ae983ae3c531126fa9c04eff00f2623b50477680785d6a03c2c6cbcce010a0481053cfde',2,0,4190,1,'INBOX',0,0,0,0);
 /*!40000 ALTER TABLE `em_accounts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2602,7 +2306,7 @@ CREATE TABLE `em_aliases` (
   `default` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `account_id` (`account_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2611,7 +2315,6 @@ CREATE TABLE `em_aliases` (
 
 LOCK TABLES `em_aliases` WRITE;
 /*!40000 ALTER TABLE `em_aliases` DISABLE KEYS */;
-INSERT INTO `em_aliases` VALUES (1,1,'postmaster','postmaster@apps.technoinfotech.com','',1);
 /*!40000 ALTER TABLE `em_aliases` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2627,10 +2330,7 @@ CREATE TABLE `em_contacts_last_mail_times` (
   `user_id` int(11) NOT NULL,
   `last_mail_time` int(11) NOT NULL,
   PRIMARY KEY (`contact_id`,`user_id`),
-  KEY `last_mail_time` (`last_mail_time`),
-  KEY `em_contacts_last_mail_times_core_user_id_fk` (`user_id`),
-  CONSTRAINT `em_contacts_last_mail_times_addressbook_contact_id_fk` FOREIGN KEY (`contact_id`) REFERENCES `addressbook_contact` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `em_contacts_last_mail_times_core_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `core_user` (`id`) ON DELETE CASCADE
+  KEY `last_mail_time` (`last_mail_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -2745,7 +2445,7 @@ CREATE TABLE `em_labels` (
   `account_id` int(11) NOT NULL,
   `default` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2754,7 +2454,6 @@ CREATE TABLE `em_labels` (
 
 LOCK TABLES `em_labels` WRITE;
 /*!40000 ALTER TABLE `em_labels` DISABLE KEYS */;
-INSERT INTO `em_labels` VALUES (1,'Label 1','$label1','7A7AFF',1,1),(2,'Label 2','$label2','59BD59',1,1),(3,'Label 3','$label3','FFBD59',1,1),(4,'Label 4','$label4','FF5959',1,1),(5,'Label 5','$label5','BD7ABD',1,1);
 /*!40000 ALTER TABLE `em_labels` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2876,7 +2575,6 @@ CREATE TABLE `email_default_email_account_templates` (
 
 LOCK TABLES `email_default_email_account_templates` WRITE;
 /*!40000 ALTER TABLE `email_default_email_account_templates` DISABLE KEYS */;
-INSERT INTO `email_default_email_account_templates` VALUES (1,1);
 /*!40000 ALTER TABLE `email_default_email_account_templates` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2901,7 +2599,6 @@ CREATE TABLE `email_default_email_templates` (
 
 LOCK TABLES `email_default_email_templates` WRITE;
 /*!40000 ALTER TABLE `email_default_email_templates` DISABLE KEYS */;
-INSERT INTO `email_default_email_templates` VALUES (2,1);
 /*!40000 ALTER TABLE `email_default_email_templates` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2939,8 +2636,7 @@ DROP TABLE IF EXISTS `fb_acl`;
 CREATE TABLE `fb_acl` (
   `user_id` int(11) NOT NULL,
   `acl_id` int(11) NOT NULL,
-  PRIMARY KEY (`user_id`,`acl_id`),
-  CONSTRAINT `fb_acl_core_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `core_user` (`id`) ON DELETE CASCADE
+  PRIMARY KEY (`user_id`,`acl_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -2950,7 +2646,6 @@ CREATE TABLE `fb_acl` (
 
 LOCK TABLES `fb_acl` WRITE;
 /*!40000 ALTER TABLE `fb_acl` DISABLE KEYS */;
-INSERT INTO `fb_acl` VALUES (1,52),(2,55);
 /*!40000 ALTER TABLE `fb_acl` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2964,10 +2659,7 @@ DROP TABLE IF EXISTS `fs_bookmarks`;
 CREATE TABLE `fs_bookmarks` (
   `folder_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  PRIMARY KEY (`folder_id`,`user_id`),
-  KEY `fs_bookmarks_core_user_id_fk` (`user_id`),
-  CONSTRAINT `fs_bookmarks_core_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `core_user` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fs_bookmarks_fs_folders_folder_id_fk` FOREIGN KEY (`folder_id`) REFERENCES `fs_folders` (`id`) ON DELETE CASCADE
+  PRIMARY KEY (`folder_id`,`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -3014,7 +2706,7 @@ DROP TABLE IF EXISTS `fs_files`;
 CREATE TABLE `fs_files` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `folder_id` int(11) NOT NULL,
-  `name` varchar(260) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `name` varchar(190) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `locked_user_id` int(11) NOT NULL DEFAULT 0,
   `status_id` int(11) NOT NULL DEFAULT 0,
   `ctime` int(11) NOT NULL DEFAULT 0,
@@ -3028,15 +2720,12 @@ CREATE TABLE `fs_files` (
   `random_code` char(11) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `delete_when_expired` tinyint(1) NOT NULL DEFAULT 0,
   `content_expire_date` int(11) DEFAULT NULL,
-  `version` int(10) unsigned NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   UNIQUE KEY `folder_id_2` (`folder_id`,`name`),
   KEY `folder_id` (`folder_id`),
   KEY `name` (`name`),
-  KEY `extension` (`extension`),
-  KEY `mtime` (`mtime`),
-  KEY `content_expire_date` (`content_expire_date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+  KEY `extension` (`extension`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3123,7 +2812,7 @@ CREATE TABLE `fs_folders` (
   KEY `name` (`name`),
   KEY `parent_id` (`parent_id`),
   KEY `visible` (`visible`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3132,7 +2821,7 @@ CREATE TABLE `fs_folders` (
 
 LOCK TABLES `fs_folders` WRITE;
 /*!40000 ALTER TABLE `fs_folders` DISABLE KEYS */;
-INSERT INTO `fs_folders` VALUES (1,1,0,'calendar',0,21,NULL,1,1595675354,1654587556,1,1,1,NULL,0),(1,2,1,'System Administrator',0,38,NULL,1,1595675354,1595675354,1,1,1,NULL,0),(1,3,0,'users',0,21,NULL,1,1595675360,1654587850,2,1,1,NULL,0),(1,4,3,'groupofficeadmin',1,39,NULL,1,1595675360,1595675360,1,1,1,NULL,0),(1,5,0,'log',0,21,NULL,1,1595675360,1595675652,1,1,1,NULL,0),(1,6,0,'addressbook',0,21,NULL,1,1595675652,1595675652,1,1,0,NULL,0),(1,7,0,'projects2',0,21,NULL,1,1595675684,1595675684,1,1,1,NULL,0),(1,8,0,'notes',0,21,NULL,1,1595675684,1595675684,1,1,1,NULL,0),(1,9,0,'tickets',0,21,NULL,1,1595675684,1595675684,1,1,1,NULL,0),(1,10,0,'public',0,21,NULL,1,1595675751,1595675751,1,1,1,NULL,0),(1,11,10,'customcss',0,0,NULL,1,1595675751,1595675751,1,1,0,NULL,0),(1,12,0,'tasks',0,21,NULL,1,1654587556,1654587556,1,1,1,NULL,0),(1,13,12,'postmaster',0,57,NULL,1,1654587556,1654587556,1,1,1,NULL,0),(1,14,1,'postmaster',0,59,NULL,1,1654587556,1654587556,1,1,1,NULL,0),(2,15,3,'postmaster@apps.technoinfotech.com',1,64,NULL,1,1654587850,1654587850,2,1,1,NULL,0);
+INSERT INTO `fs_folders` VALUES (1,1,0,'calendar',0,38,NULL,1,1595675354,1595675354,1,1,1,NULL,0),(1,2,1,'System Administrator',0,38,NULL,1,1595675354,1595675354,1,1,1,NULL,0),(1,3,0,'users',0,21,NULL,1,1595675360,1595675360,1,1,1,NULL,0),(1,4,3,'groupofficeadmin',1,39,NULL,1,1595675360,1595675360,1,1,1,NULL,0),(1,5,0,'log',0,51,NULL,1,1595675360,1595675652,1,1,1,NULL,0),(1,6,0,'addressbook',0,50,NULL,1,1595675652,1595675652,1,1,0,NULL,0),(1,7,0,'projects2',0,21,NULL,1,1595675684,1595675684,1,1,1,NULL,0),(1,8,0,'notes',0,21,NULL,1,1595675684,1595675684,1,1,1,NULL,0),(1,9,0,'tickets',0,21,NULL,1,1595675684,1595675684,1,1,1,NULL,0),(1,10,0,'public',0,21,NULL,1,1595675751,1595675751,1,1,1,NULL,0),(1,11,10,'customcss',0,0,NULL,1,1595675751,1595675751,1,1,0,NULL,0);
 /*!40000 ALTER TABLE `fs_folders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3581,7 +3270,7 @@ CREATE TABLE `go_cron` (
 
 LOCK TABLES `go_cron` WRITE;
 /*!40000 ALTER TABLE `go_cron` DISABLE KEYS */;
-INSERT INTO `go_cron` VALUES (1,'Calendar publisher',1,'0','*','*','*','*','*','GO\\Calendar\\Cron\\CalendarPublisher',0,1654588800,1654585201,1654585201,NULL,0,'[]'),(2,'Email Reminders',1,'*/5','*','*','*','*','*','GO\\Base\\Cron\\EmailReminders',0,1654588200,1654587901,1654587901,NULL,0,'[]'),(3,'Calculate disk usage',1,'0','0','*','*','*','*','GO\\Base\\Cron\\CalculateDiskUsage',0,1654646400,1654560001,1654560001,NULL,0,'[]');
+INSERT INTO `go_cron` VALUES (1,'Calendar publisher',1,'0','*','*','*','*','*','GO\\Calendar\\Cron\\CalendarPublisher',0,1595674800,0,0,NULL,0,'[]'),(2,'Email Reminders',1,'*/5','*','*','*','*','*','GO\\Base\\Cron\\EmailReminders',0,1595674500,0,0,NULL,0,'[]'),(3,'Calculate disk usage',1,'0','0','*','*','*','*','GO\\Base\\Cron\\CalculateDiskUsage',0,1595721600,0,0,NULL,0,'[]');
 /*!40000 ALTER TABLE `go_cron` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3646,7 +3335,7 @@ CREATE TABLE `go_holidays` (
   `free_day` tinyint(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   KEY `region` (`region`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3655,7 +3344,6 @@ CREATE TABLE `go_holidays` (
 
 LOCK TABLES `go_holidays` WRITE;
 /*!40000 ALTER TABLE `go_holidays` DISABLE KEYS */;
-INSERT INTO `go_holidays` VALUES (1,'2022-01-01','New Years Day','en',1),(2,'2022-01-06','Twelfth Day','en',1),(3,'2022-05-01','May Day','en',1),(4,'2022-08-15','Assumption Day','en',1),(5,'2022-10-03','German Unification Day','en',1),(6,'2022-10-31','Reformation Day','en',1),(7,'2022-11-01','All Saints\' Day','en',1),(8,'2022-12-25','Christmas Day','en',1),(9,'2022-12-26','Boxing Day','en',1),(10,'2022-02-28','Shrove Monday','en',1),(11,'2022-03-01','Shrove Tuesday','en',1),(12,'2022-03-02','Ash Wednesday','en',1),(13,'2022-04-15','Good Friday','en',1),(14,'2022-04-17','Easter Sunday','en',1),(15,'2022-04-18','Easter Monday','en',1),(16,'2022-05-26','Ascension Day','en',1),(17,'2022-06-05','Whit Sunday','en',1),(18,'2022-06-06','Whit Monday','en',1),(19,'2022-06-16','Feast of Corpus Christi','en',1),(20,'2022-11-16','Penance Day','en',1);
 /*!40000 ALTER TABLE `go_holidays` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3967,7 +3655,7 @@ CREATE TABLE `go_settings` (
 
 LOCK TABLES `go_settings` WRITE;
 /*!40000 ALTER TABLE `go_settings` DISABLE KEYS */;
-INSERT INTO `go_settings` VALUES (0,'cron_last_run','1654587901'),(0,'database_usage','5619712'),(0,'file_storage_usage','1418295'),(0,'zpushadmin_can_connect','1'),(1,'email_always_request_notification','0'),(1,'email_always_respond_to_notifications','0'),(1,'email_defaultTemplateId',NULL),(1,'email_font_size','14px'),(1,'email_show_bcc','0'),(1,'email_show_cc','1'),(1,'email_show_from','1'),(1,'email_skip_unknown_recipients','0'),(1,'email_sort_email_addresses_by_time','1'),(1,'email_use_plain_text_markup','0'),(2,'email_always_request_notification','0'),(2,'email_always_respond_to_notifications','0'),(2,'email_font_size','14px'),(2,'email_show_bcc','0'),(2,'email_show_cc','1'),(2,'email_show_from','1'),(2,'email_skip_unknown_recipients','0'),(2,'email_sort_email_addresses_by_time','1'),(2,'email_use_plain_text_markup','0'),(2,'files_shared_cache_ctime','1654587850'),(2,'ms_calendars','2');
+INSERT INTO `go_settings` VALUES (0,'zpushadmin_can_connect','1'),(1,'email_always_request_notification','0'),(1,'email_always_respond_to_notifications','0'),(1,'email_defaultTemplateId',NULL),(1,'email_font_size','14px'),(1,'email_show_bcc','0'),(1,'email_show_cc','1'),(1,'email_show_from','1'),(1,'email_skip_unknown_recipients','0'),(1,'email_sort_email_addresses_by_time','1'),(1,'email_use_plain_text_markup','0');
 /*!40000 ALTER TABLE `go_settings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3982,8 +3670,7 @@ CREATE TABLE `go_state` (
   `user_id` int(11) NOT NULL,
   `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `value` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  PRIMARY KEY (`user_id`,`name`),
-  CONSTRAINT `go_state_core_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `core_user` (`id`) ON DELETE CASCADE
+  PRIMARY KEY (`user_id`,`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -3993,7 +3680,7 @@ CREATE TABLE `go_state` (
 
 LOCK TABLES `go_state` WRITE;
 /*!40000 ALTER TABLE `go_state` DISABLE KEYS */;
-INSERT INTO `go_state` VALUES (1,'su-tasks-grid','o%3Acolumns%3Da%253Ao%25253Aid%25253Dn%2525253A0%25255Ewidth%25253Dn%2525253A40%255Eo%25253Aid%25253Ds%2525253Atask-portlet-name-col%25255Ewidth%25253Dn%2525253A531%255Eo%25253Aid%25253Dn%2525253A2%25255Ewidth%25253Dn%2525253A100%255Eo%25253Aid%25253Dn%2525253A3%25255Ewidth%25253Dn%2525253A150%25255Ehidden%25253Db%2525253A1%255Eo%25253Aid%25253Dn%2525253A4%25255Ewidth%25253Dn%2525253A50%25255Ehidden%25253Db%2525253A1%5Esort%3Do%253Afield%253Ds%25253Adue_time%255Edirection%253Ds%25253AASC%5Egroup%3Ds%253Atasklist_name'),(2,'calendar-state','s%3A%7B%22displayType%22%3A%22days%22%2C%22days%22%3A5%2C%22calendars%22%3A%5B2%5D%2C%22view_id%22%3A0%2C%22group_id%22%3A1%7D'),(2,'list-grid','o%3Acolumns%3Da%253Ao%25253Aid%25253Dn%2525253A0%25255Ewidth%25253Dn%2525253A100%25255Ehidden%25253Db%2525253A1%255Eo%25253Aid%25253Dn%2525253A1%25255Ewidth%25253Dn%2525253A90%255Eo%25253Aid%25253Ds%2525253Alistview-calendar-name-heading%25255Ewidth%25253Dn%2525253A1049%5Esort%3Do%253Afield%253Ds%25253Astart_time%255Edirection%253Ds%25253AASC%5Egroup%3Ds%253Aday'),(2,'su-tasks-grid','o%3Acolumns%3Da%253Ao%25253Aid%25253Dn%2525253A0%25255Ewidth%25253Dn%2525253A35%255Eo%25253Aid%25253Ds%2525253Atask-portlet-name-col%25255Ewidth%25253Dn%2525253A573%255Eo%25253Aid%25253Dn%2525253A2%25255Ewidth%25253Dn%2525253A100%255Eo%25253Aid%25253Dn%2525253A3%25255Ewidth%25253Dn%2525253A150%25255Ehidden%25253Db%2525253A1%255Eo%25253Aid%25253Dn%2525253A4%25255Ewidth%25253Dn%2525253A50%25255Ehidden%25253Db%2525253A1%5Esort%3Do%253Afield%253Ds%25253Adue_time%255Edirection%253Ds%25253AASC%5Egroup%3Ds%253Atasklist_name'),(2,'tasks-status-filter','s%3Atoday');
+INSERT INTO `go_state` VALUES (1,'su-tasks-grid','o%3Acolumns%3Da%253Ao%25253Aid%25253Dn%2525253A0%25255Ewidth%25253Dn%2525253A40%255Eo%25253Aid%25253Ds%2525253Atask-portlet-name-col%25255Ewidth%25253Dn%2525253A531%255Eo%25253Aid%25253Dn%2525253A2%25255Ewidth%25253Dn%2525253A100%255Eo%25253Aid%25253Dn%2525253A3%25255Ewidth%25253Dn%2525253A150%25255Ehidden%25253Db%2525253A1%255Eo%25253Aid%25253Dn%2525253A4%25255Ewidth%25253Dn%2525253A50%25255Ehidden%25253Db%2525253A1%5Esort%3Do%253Afield%253Ds%25253Adue_time%255Edirection%253Ds%25253AASC%5Egroup%3Ds%253Atasklist_name');
 /*!40000 ALTER TABLE `go_state` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4011,7 +3698,6 @@ CREATE TABLE `go_templates` (
   `name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `acl_id` int(11) NOT NULL DEFAULT 0,
   `content` longblob NOT NULL,
-  `filename` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `extension` varchar(4) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -4023,7 +3709,7 @@ CREATE TABLE `go_templates` (
 
 LOCK TABLES `go_templates` WRITE;
 /*!40000 ALTER TABLE `go_templates` DISABLE KEYS */;
-INSERT INTO `go_templates` VALUES (1,1,0,'Default',8,'Message-ID: <c474869bd9b6713be9e93bbb70ce99c5@vmi659954.contaboserver.net>\r\nDate: Sat, 25 Jul 2020 10:50:43 +0000\r\nFrom: \r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative;\r\n boundary=\"_=_swift_1595674243_16e98ff2db13dd5e74fe87c3c9d81101_=_\"\r\nX-Group-Office-Title: Group-Office\r\n\r\n\r\n--_=_swift_1595674243_16e98ff2db13dd5e74fe87c3c9d81101_=_\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nHi {contact:firstName},\r\n\r\n{body}\r\n\r\nBest regards\r\n\r\n\r\n{user:displayName}\r\n\r\n--_=_swift_1595674243_16e98ff2db13dd5e74fe87c3c9d81101_=_\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nHi<gotpl if=3D\"contact:firstName\"> {contact:firstName},</gotpl><br />\r\n<br />\r\n{body}<br />\r\n<br />\r\nBest regards<br />\r\n<br />\r\n<br />\r\n{user:displayName}<br />\r\n\r\n--_=_swift_1595674243_16e98ff2db13dd5e74fe87c3c9d81101_=_--\r\n',NULL,'');
+INSERT INTO `go_templates` VALUES (1,1,0,'Default',8,'Message-ID: <c474869bd9b6713be9e93bbb70ce99c5@powermail.mydomainname.com>\r\nDate: Sat, 25 Jul 2020 10:50:43 +0000\r\nFrom: \r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative;\r\n boundary=\"_=_swift_1595674243_16e98ff2db13dd5e74fe87c3c9d81101_=_\"\r\nX-Group-Office-Title: Group-Office\r\n\r\n\r\n--_=_swift_1595674243_16e98ff2db13dd5e74fe87c3c9d81101_=_\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nHi {contact:firstName},\r\n\r\n{body}\r\n\r\nBest regards\r\n\r\n\r\n{user:displayName}\r\n\r\n--_=_swift_1595674243_16e98ff2db13dd5e74fe87c3c9d81101_=_\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nHi<gotpl if=3D\"contact:firstName\"> {contact:firstName},</gotpl><br />\r\n<br />\r\n{body}<br />\r\n<br />\r\nBest regards<br />\r\n<br />\r\n<br />\r\n{user:displayName}<br />\r\n\r\n--_=_swift_1595674243_16e98ff2db13dd5e74fe87c3c9d81101_=_--\r\n','');
 /*!40000 ALTER TABLE `go_templates` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4069,7 +3755,7 @@ CREATE TABLE `googleauth_secret` (
   `createdAt` datetime NOT NULL,
   PRIMARY KEY (`userId`),
   KEY `user` (`userId`),
-  CONSTRAINT `googleauth_secret_user` FOREIGN KEY (`userId`) REFERENCES `core_user` (`id`) ON DELETE CASCADE
+  CONSTRAINT `googleauth_secret_user` FOREIGN KEY (`userId`) REFERENCES `core_user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -4140,7 +3826,7 @@ CREATE TABLE `imapauth_server_domain` (
 
 LOCK TABLES `imapauth_server_domain` WRITE;
 /*!40000 ALTER TABLE `imapauth_server_domain` DISABLE KEYS */;
-INSERT INTO `imapauth_server_domain` VALUES (3,3,'apps.technoinfotech.com');
+INSERT INTO `imapauth_server_domain` VALUES (3,3,'powermail.mydomainname.com');
 /*!40000 ALTER TABLE `imapauth_server_domain` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4192,7 +3878,7 @@ CREATE TABLE `notes_note` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`createdBy`),
   KEY `category_id` (`noteBookId`),
-  CONSTRAINT `notes_note_ibfk_1` FOREIGN KEY (`noteBookId`) REFERENCES `notes_note_book` (`id`) ON DELETE CASCADE
+  CONSTRAINT `notes_note_ibfk_1` FOREIGN KEY (`noteBookId`) REFERENCES `notes_note_book` (`id`) ON DELETE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=173 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -4222,7 +3908,7 @@ CREATE TABLE `notes_note_book` (
   PRIMARY KEY (`id`),
   KEY `aclId` (`aclId`),
   CONSTRAINT `notes_note_book_ibfk_1` FOREIGN KEY (`aclId`) REFERENCES `core_acl` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=66 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4231,7 +3917,7 @@ CREATE TABLE `notes_note_book` (
 
 LOCK TABLES `notes_note_book` WRITE;
 /*!40000 ALTER TABLE `notes_note_book` DISABLE KEYS */;
-INSERT INTO `notes_note_book` VALUES (65,NULL,1,12,'Shared',NULL),(66,NULL,2,63,'postmaster',NULL);
+INSERT INTO `notes_note_book` VALUES (65,NULL,1,12,'Shared',NULL);
 /*!40000 ALTER TABLE `notes_note_book` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4294,8 +3980,6 @@ DROP TABLE IF EXISTS `notes_user_settings`;
 CREATE TABLE `notes_user_settings` (
   `userId` int(11) NOT NULL,
   `defaultNoteBookId` int(11) DEFAULT NULL,
-  `rememberLastItems` tinyint(1) DEFAULT 0,
-  `lastNoteBookIds` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT '',
   PRIMARY KEY (`userId`),
   KEY `defaultNoteBookId` (`defaultNoteBookId`),
   CONSTRAINT `notes_user_settings_ibfk_1` FOREIGN KEY (`defaultNoteBookId`) REFERENCES `notes_note_book` (`id`) ON DELETE CASCADE,
@@ -4309,32 +3993,8 @@ CREATE TABLE `notes_user_settings` (
 
 LOCK TABLES `notes_user_settings` WRITE;
 /*!40000 ALTER TABLE `notes_user_settings` DISABLE KEYS */;
-INSERT INTO `notes_user_settings` VALUES (1,65,0,''),(2,66,0,'');
+INSERT INTO `notes_user_settings` VALUES (1,65);
 /*!40000 ALTER TABLE `notes_user_settings` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `smi_account_settings`
---
-
-DROP TABLE IF EXISTS `smi_account_settings`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `smi_account_settings` (
-  `account_id` int(11) NOT NULL,
-  `always_sign` tinyint(1) NOT NULL,
-  PRIMARY KEY (`account_id`),
-  CONSTRAINT `fk_account_id_to_email_account` FOREIGN KEY (`account_id`) REFERENCES `em_accounts` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `smi_account_settings`
---
-
-LOCK TABLES `smi_account_settings` WRITE;
-/*!40000 ALTER TABLE `smi_account_settings` DISABLE KEYS */;
-/*!40000 ALTER TABLE `smi_account_settings` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -4371,16 +4031,10 @@ DROP TABLE IF EXISTS `smi_pkcs12`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `smi_pkcs12` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` int(11) NOT NULL,
   `cert` blob DEFAULT NULL,
-  `serial` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '000-000',
-  `valid_until` datetime NOT NULL DEFAULT '2000-01-01 11:11:11',
-  `valid_since` datetime NOT NULL DEFAULT '2000-01-01 00:00:00',
-  `provided_by` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Unknown',
-  PRIMARY KEY (`id`),
-  KEY `fk_pks_cert_account_id_email_account_idx` (`account_id`),
-  CONSTRAINT `fk_pks_cert_account_id_email_account` FOREIGN KEY (`account_id`) REFERENCES `em_accounts` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
+  `always_sign` tinyint(1) NOT NULL,
+  PRIMARY KEY (`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -4432,12 +4086,9 @@ DROP TABLE IF EXISTS `su_latest_read_announcement_records`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `su_latest_read_announcement_records` (
   `user_id` int(11) NOT NULL,
-  `announcement_id` int(11) DEFAULT NULL,
+  `announcement_id` int(11) NOT NULL DEFAULT 0,
   `announcement_ctime` int(11) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`user_id`),
-  KEY `su_latest_read_announcement_records_su_announcements_id_fk` (`announcement_id`),
-  CONSTRAINT `su_latest_read_announcement_records_core_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `core_user` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `su_latest_read_announcement_records_su_announcements_id_fk` FOREIGN KEY (`announcement_id`) REFERENCES `su_announcements` (`id`) ON DELETE CASCADE
+  PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -4447,7 +4098,7 @@ CREATE TABLE `su_latest_read_announcement_records` (
 
 LOCK TABLES `su_latest_read_announcement_records` WRITE;
 /*!40000 ALTER TABLE `su_latest_read_announcement_records` DISABLE KEYS */;
-INSERT INTO `su_latest_read_announcement_records` VALUES (1,NULL,0),(2,NULL,0);
+INSERT INTO `su_latest_read_announcement_records` VALUES (1,0,0);
 /*!40000 ALTER TABLE `su_latest_read_announcement_records` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4461,8 +4112,7 @@ DROP TABLE IF EXISTS `su_notes`;
 CREATE TABLE `su_notes` (
   `user_id` int(11) NOT NULL,
   `text` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  PRIMARY KEY (`user_id`),
-  CONSTRAINT `su_notes_core_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `core_user` (`id`) ON DELETE CASCADE
+  PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -4472,7 +4122,7 @@ CREATE TABLE `su_notes` (
 
 LOCK TABLES `su_notes` WRITE;
 /*!40000 ALTER TABLE `su_notes` DISABLE KEYS */;
-INSERT INTO `su_notes` VALUES (1,NULL),(2,NULL);
+INSERT INTO `su_notes` VALUES (1,NULL);
 /*!40000 ALTER TABLE `su_notes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4489,9 +4139,7 @@ CREATE TABLE `su_rss_feeds` (
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `summary` tinyint(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  KEY `su_rss_feeds_core_user_id_fk` (`user_id`),
-  CONSTRAINT `su_rss_feeds_core_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `core_user` (`id`) ON DELETE CASCADE
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -4514,8 +4162,7 @@ DROP TABLE IF EXISTS `su_visible_calendars`;
 CREATE TABLE `su_visible_calendars` (
   `user_id` int(11) NOT NULL,
   `calendar_id` int(11) NOT NULL,
-  PRIMARY KEY (`user_id`,`calendar_id`),
-  CONSTRAINT `su_visible_calendars_core_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `core_user` (`id`) ON DELETE CASCADE
+  PRIMARY KEY (`user_id`,`calendar_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -4525,7 +4172,7 @@ CREATE TABLE `su_visible_calendars` (
 
 LOCK TABLES `su_visible_calendars` WRITE;
 /*!40000 ALTER TABLE `su_visible_calendars` DISABLE KEYS */;
-INSERT INTO `su_visible_calendars` VALUES (1,1),(2,2);
+INSERT INTO `su_visible_calendars` VALUES (1,1);
 /*!40000 ALTER TABLE `su_visible_calendars` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4539,8 +4186,7 @@ DROP TABLE IF EXISTS `su_visible_lists`;
 CREATE TABLE `su_visible_lists` (
   `user_id` int(11) NOT NULL,
   `tasklist_id` int(11) NOT NULL,
-  PRIMARY KEY (`user_id`,`tasklist_id`),
-  CONSTRAINT `su_visible_lists_core_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `core_user` (`id`) ON DELETE CASCADE
+  PRIMARY KEY (`user_id`,`tasklist_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -4677,7 +4323,6 @@ CREATE TABLE `sync_settings` (
   `server_is_master` tinyint(1) NOT NULL DEFAULT 1,
   `max_days_old` tinyint(4) NOT NULL DEFAULT 0,
   `delete_old_events` tinyint(1) NOT NULL DEFAULT 1,
-  `allowDeletes` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -4688,7 +4333,7 @@ CREATE TABLE `sync_settings` (
 
 LOCK TABLES `sync_settings` WRITE;
 /*!40000 ALTER TABLE `sync_settings` DISABLE KEYS */;
-INSERT INTO `sync_settings` VALUES (1,0,0,0,0,0,1,0,1,0),(2,0,0,0,0,0,1,0,1,0);
+INSERT INTO `sync_settings` VALUES (1,0,0,0,0,0,1,0,1);
 /*!40000 ALTER TABLE `sync_settings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4700,13 +4345,11 @@ DROP TABLE IF EXISTS `sync_tasklist_user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `sync_tasklist_user` (
-  `tasklistId` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `userId` int(11) NOT NULL DEFAULT 0,
-  `isDefault` tinyint(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`tasklistId`,`userId`),
-  KEY `user_id` (`userId`),
-  CONSTRAINT `sync_tasklist_user_core_user_id_fk` FOREIGN KEY (`userId`) REFERENCES `core_user` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `sync_tasklist_user_tasks_tasklist_id_fk` FOREIGN KEY (`tasklistId`) REFERENCES `tasks_tasklist` (`id`) ON DELETE CASCADE
+  `tasklist_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL DEFAULT 0,
+  `default_tasklist` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`tasklist_id`,`user_id`),
+  KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -4791,7 +4434,6 @@ CREATE TABLE `ta_portlet_tasklists` (
 
 LOCK TABLES `ta_portlet_tasklists` WRITE;
 /*!40000 ALTER TABLE `ta_portlet_tasklists` DISABLE KEYS */;
-INSERT INTO `ta_portlet_tasklists` VALUES (2,1);
 /*!40000 ALTER TABLE `ta_portlet_tasklists` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4818,7 +4460,7 @@ CREATE TABLE `ta_settings` (
 
 LOCK TABLES `ta_settings` WRITE;
 /*!40000 ALTER TABLE `ta_settings` DISABLE KEYS */;
-INSERT INTO `ta_settings` VALUES (1,0,'0',0,0),(2,0,'0',0,1);
+INSERT INTO `ta_settings` VALUES (1,0,'0',0,0);
 /*!40000 ALTER TABLE `ta_settings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4837,7 +4479,7 @@ CREATE TABLE `ta_tasklists` (
   `files_folder_id` int(11) NOT NULL DEFAULT 0,
   `version` int(10) unsigned NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4846,7 +4488,6 @@ CREATE TABLE `ta_tasklists` (
 
 LOCK TABLES `ta_tasklists` WRITE;
 /*!40000 ALTER TABLE `ta_tasklists` DISABLE KEYS */;
-INSERT INTO `ta_tasklists` VALUES (1,'postmaster',2,57,13,1);
 /*!40000 ALTER TABLE `ta_tasklists` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -4919,388 +4560,6 @@ LOCK TABLES `ta_tasks_custom_fields` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `tasks_alert`
---
-
-DROP TABLE IF EXISTS `tasks_alert`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tasks_alert` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `when` datetime NOT NULL,
-  `acknowledged` datetime DEFAULT NULL,
-  `relatedTo` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `action` smallint(2) NOT NULL DEFAULT 1,
-  `offset` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `relativeTo` varchar(5) COLLATE utf8mb4_unicode_ci DEFAULT 'start',
-  `taskId` int(11) unsigned NOT NULL,
-  `userId` int(11) NOT NULL,
-  PRIMARY KEY (`id`,`taskId`,`userId`),
-  KEY `fk_tasks_alert_tasks_task_user1_idx` (`taskId`,`userId`),
-  CONSTRAINT `fk_tasks_alert_tasks_task_user1` FOREIGN KEY (`taskId`, `userId`) REFERENCES `tasks_task_user` (`taskId`, `userId`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tasks_alert`
---
-
-LOCK TABLES `tasks_alert` WRITE;
-/*!40000 ALTER TABLE `tasks_alert` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tasks_alert` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `tasks_category`
---
-
-DROP TABLE IF EXISTS `tasks_category`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tasks_category` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `ownerId` int(11) DEFAULT NULL,
-  `tasklistId` int(11) unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `user_id` (`ownerId`),
-  KEY `tasks_category_tasklist_ibfk_9_idx` (`tasklistId`),
-  CONSTRAINT `tasks_category_ibfk_1` FOREIGN KEY (`ownerId`) REFERENCES `core_user` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `tasks_category_tasklist_ibfk_9` FOREIGN KEY (`tasklistId`) REFERENCES `tasks_tasklist` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tasks_category`
---
-
-LOCK TABLES `tasks_category` WRITE;
-/*!40000 ALTER TABLE `tasks_category` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tasks_category` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `tasks_default_alert`
---
-
-DROP TABLE IF EXISTS `tasks_default_alert`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tasks_default_alert` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `when` datetime NOT NULL,
-  `relatedTo` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `action` smallint(2) NOT NULL DEFAULT 1,
-  `offset` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `relativeTo` varchar(5) COLLATE utf8mb4_unicode_ci DEFAULT 'start',
-  `withTime` tinyint(1) NOT NULL DEFAULT 1,
-  `tasklistId` int(11) unsigned NOT NULL,
-  PRIMARY KEY (`id`,`tasklistId`),
-  KEY `fk_tasks_default_alert_tasks_tasklist1_idx` (`tasklistId`),
-  CONSTRAINT `fk_tasks_default_alert_tasks_tasklist1` FOREIGN KEY (`tasklistId`) REFERENCES `tasks_tasklist` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tasks_default_alert`
---
-
-LOCK TABLES `tasks_default_alert` WRITE;
-/*!40000 ALTER TABLE `tasks_default_alert` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tasks_default_alert` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `tasks_portlet_tasklist`
---
-
-DROP TABLE IF EXISTS `tasks_portlet_tasklist`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tasks_portlet_tasklist` (
-  `userId` int(11) NOT NULL,
-  `tasklistId` int(11) unsigned NOT NULL,
-  PRIMARY KEY (`userId`,`tasklistId`),
-  KEY `tasklistId` (`tasklistId`),
-  CONSTRAINT `tasks_portlet_tasklist_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `core_user` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `tasks_portlet_tasklist_ibfk_2` FOREIGN KEY (`tasklistId`) REFERENCES `tasks_tasklist` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tasks_portlet_tasklist`
---
-
-LOCK TABLES `tasks_portlet_tasklist` WRITE;
-/*!40000 ALTER TABLE `tasks_portlet_tasklist` DISABLE KEYS */;
-INSERT INTO `tasks_portlet_tasklist` VALUES (2,1);
-/*!40000 ALTER TABLE `tasks_portlet_tasklist` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `tasks_task`
---
-
-DROP TABLE IF EXISTS `tasks_task`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tasks_task` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `uid` varchar(190) CHARACTER SET ascii COLLATE ascii_bin NOT NULL DEFAULT '',
-  `tasklistId` int(11) unsigned NOT NULL,
-  `groupId` int(10) unsigned DEFAULT NULL,
-  `responsibleUserId` int(11) DEFAULT NULL,
-  `createdBy` int(11) DEFAULT NULL,
-  `createdAt` datetime NOT NULL,
-  `modifiedAt` datetime NOT NULL,
-  `modifiedBy` int(11) DEFAULT NULL,
-  `filesFolderId` int(11) DEFAULT NULL,
-  `due` date DEFAULT NULL,
-  `start` date DEFAULT NULL,
-  `estimatedDuration` int(11) DEFAULT NULL COMMENT 'Duration in seconds',
-  `progress` tinyint(2) NOT NULL DEFAULT 1,
-  `progressUpdated` datetime DEFAULT NULL,
-  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `color` char(6) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `recurrenceRule` varchar(400) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `priority` int(11) NOT NULL DEFAULT 1,
-  `freeBusyStatus` char(4) COLLATE utf8mb4_unicode_ci DEFAULT 'busy',
-  `privacy` varchar(7) COLLATE utf8mb4_unicode_ci DEFAULT 'public',
-  `percentComplete` tinyint(4) NOT NULL DEFAULT 0,
-  `uri` varchar(190) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
-  `vcalendarBlobId` binary(40) DEFAULT NULL,
-  `progressChange` tinyint(2) DEFAULT NULL,
-  `startTime` time DEFAULT NULL,
-  `location` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `list_id` (`tasklistId`),
-  KEY `rrule` (`recurrenceRule`(191)),
-  KEY `uuid` (`uid`),
-  KEY `fkModifiedBy` (`modifiedBy`),
-  KEY `createdBy` (`createdBy`),
-  KEY `filesFolderId` (`filesFolderId`),
-  KEY `tasks_task_groupId_idx` (`groupId`),
-  KEY `tasks_vcalendar_blob_idx` (`vcalendarBlobId`),
-  KEY `tasks_task_progress_index` (`progress`),
-  CONSTRAINT `tasks_task_fkModifiedBy` FOREIGN KEY (`modifiedBy`) REFERENCES `core_user` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `tasks_task_groupId` FOREIGN KEY (`groupId`) REFERENCES `tasks_tasklist_group` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `tasks_task_ibfk_1` FOREIGN KEY (`tasklistId`) REFERENCES `tasks_tasklist` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `tasks_task_ibfk_2` FOREIGN KEY (`createdBy`) REFERENCES `core_user` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `tasks_vcalendar_blob` FOREIGN KEY (`vcalendarBlobId`) REFERENCES `core_blob` (`id`) ON UPDATE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tasks_task`
---
-
-LOCK TABLES `tasks_task` WRITE;
-/*!40000 ALTER TABLE `tasks_task` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tasks_task` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `tasks_task_category`
---
-
-DROP TABLE IF EXISTS `tasks_task_category`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tasks_task_category` (
-  `taskId` int(11) unsigned NOT NULL,
-  `categoryId` int(11) unsigned NOT NULL,
-  PRIMARY KEY (`taskId`,`categoryId`),
-  KEY `tasks_task_category_ibfk_2` (`categoryId`),
-  CONSTRAINT `tasks_task_category_ibfk_1` FOREIGN KEY (`taskId`) REFERENCES `tasks_task` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `tasks_task_category_ibfk_2` FOREIGN KEY (`categoryId`) REFERENCES `tasks_category` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tasks_task_category`
---
-
-LOCK TABLES `tasks_task_category` WRITE;
-/*!40000 ALTER TABLE `tasks_task_category` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tasks_task_category` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `tasks_task_custom_fields`
---
-
-DROP TABLE IF EXISTS `tasks_task_custom_fields`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tasks_task_custom_fields` (
-  `id` int(11) unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  CONSTRAINT `tasks_task_custom_fields_ibfk_1` FOREIGN KEY (`id`) REFERENCES `tasks_task` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tasks_task_custom_fields`
---
-
-LOCK TABLES `tasks_task_custom_fields` WRITE;
-/*!40000 ALTER TABLE `tasks_task_custom_fields` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tasks_task_custom_fields` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `tasks_task_user`
---
-
-DROP TABLE IF EXISTS `tasks_task_user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tasks_task_user` (
-  `taskId` int(11) unsigned NOT NULL,
-  `userId` int(11) NOT NULL,
-  `modSeq` int(11) NOT NULL DEFAULT 0,
-  `freeBusyStatus` char(4) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'busy',
-  PRIMARY KEY (`taskId`,`userId`),
-  KEY `fk_tasks_task_user_tasks_task1_idx` (`taskId`),
-  CONSTRAINT `fk_tasks_task_user_tasks_task1` FOREIGN KEY (`taskId`) REFERENCES `tasks_task` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tasks_task_user`
---
-
-LOCK TABLES `tasks_task_user` WRITE;
-/*!40000 ALTER TABLE `tasks_task_user` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tasks_task_user` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `tasks_tasklist`
---
-
-DROP TABLE IF EXISTS `tasks_tasklist`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tasks_tasklist` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `role` tinyint(2) unsigned DEFAULT NULL,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `createdBy` int(11) DEFAULT NULL,
-  `aclId` int(11) NOT NULL,
-  `version` int(10) unsigned NOT NULL DEFAULT 1,
-  `ownerId` int(11) NOT NULL DEFAULT 1,
-  `filesFolderId` int(11) DEFAULT NULL,
-  `projectId` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fkCreatedBy` (`createdBy`),
-  KEY `fkAcl` (`aclId`),
-  CONSTRAINT `tasks_tasklist_ibfk1` FOREIGN KEY (`aclId`) REFERENCES `core_acl` (`id`),
-  CONSTRAINT `tasks_tasklist_ibfk2` FOREIGN KEY (`createdBy`) REFERENCES `core_user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tasks_tasklist`
---
-
-LOCK TABLES `tasks_tasklist` WRITE;
-/*!40000 ALTER TABLE `tasks_tasklist` DISABLE KEYS */;
-INSERT INTO `tasks_tasklist` VALUES (1,1,'postmaster',NULL,2,57,1,1,13,NULL);
-/*!40000 ALTER TABLE `tasks_tasklist` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `tasks_tasklist_group`
---
-
-DROP TABLE IF EXISTS `tasks_tasklist_group`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tasks_tasklist_group` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `color` char(6) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sortOrder` smallint(2) unsigned NOT NULL DEFAULT 0,
-  `tasklistId` int(11) unsigned NOT NULL,
-  PRIMARY KEY (`id`,`tasklistId`),
-  KEY `fk_tasks_column_tasks_tasklist1_idx` (`tasklistId`),
-  CONSTRAINT `fk_tasks_column_tasks_tasklist1` FOREIGN KEY (`tasklistId`) REFERENCES `tasks_tasklist` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tasks_tasklist_group`
---
-
-LOCK TABLES `tasks_tasklist_group` WRITE;
-/*!40000 ALTER TABLE `tasks_tasklist_group` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tasks_tasklist_group` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `tasks_tasklist_user`
---
-
-DROP TABLE IF EXISTS `tasks_tasklist_user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tasks_tasklist_user` (
-  `tasklistId` int(11) unsigned NOT NULL,
-  `userId` int(11) NOT NULL,
-  `modSeq` int(11) NOT NULL,
-  `color` char(6) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `sortOrder` int(11) DEFAULT NULL,
-  `isVisible` tinyint(1) NOT NULL DEFAULT 0,
-  `isSubscribed` tinyint(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`tasklistId`,`userId`),
-  KEY `fk_tasks_tasklist_user_tasks_tasklist1_idx` (`tasklistId`),
-  CONSTRAINT `fk_tasks_tasklist_user_tasks_tasklist1` FOREIGN KEY (`tasklistId`) REFERENCES `tasks_tasklist` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tasks_tasklist_user`
---
-
-LOCK TABLES `tasks_tasklist_user` WRITE;
-/*!40000 ALTER TABLE `tasks_tasklist_user` DISABLE KEYS */;
-/*!40000 ALTER TABLE `tasks_tasklist_user` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `tasks_user_settings`
---
-
-DROP TABLE IF EXISTS `tasks_user_settings`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tasks_user_settings` (
-  `userId` int(11) NOT NULL,
-  `defaultTasklistId` int(11) unsigned DEFAULT NULL,
-  `rememberLastItems` tinyint(1) NOT NULL DEFAULT 0,
-  `lastTasklistIds` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `defaultDate` tinyint(1) DEFAULT 0,
-  PRIMARY KEY (`userId`),
-  KEY `tasks_user_settings_tasks_tasklist_id_fk` (`defaultTasklistId`),
-  CONSTRAINT `tasks_user_settings_core_user_id_fk` FOREIGN KEY (`userId`) REFERENCES `core_user` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `tasks_user_settings_tasks_tasklist_id_fk` FOREIGN KEY (`defaultTasklistId`) REFERENCES `tasks_tasklist` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `tasks_user_settings`
---
-
-LOCK TABLES `tasks_user_settings` WRITE;
-/*!40000 ALTER TABLE `tasks_user_settings` DISABLE KEYS */;
-INSERT INTO `tasks_user_settings` VALUES (2,1,0,NULL,0);
-/*!40000 ALTER TABLE `tasks_user_settings` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `zpa_devices`
 --
 
@@ -5342,4 +4601,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-06-07  9:45:42
+-- Dump completed on 2020-07-25 16:49:27
